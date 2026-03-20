@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import { type Upload, type AnalysisResult } from '@/lib/types';
-import RiskBadge from '@/components/RiskBadge';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import Link from 'next/link';
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { type Upload, type AnalysisResult } from "@/lib/types";
+import RiskBadge from "@/components/RiskBadge";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import Link from "next/link";
 import {
   ArrowLeft,
   Clock,
@@ -20,8 +20,8 @@ import {
   FileDown,
   Loader,
   CheckCircle,
-} from 'lucide-react';
-import styles from './page.module.css';
+} from "lucide-react";
+import styles from "./page.module.css";
 
 export default function AnalysisDetailPage() {
   const params = useParams();
@@ -37,17 +37,17 @@ export default function AnalysisDetailPage() {
       const supabase = createClient();
 
       const { data: uploadData } = await supabase
-        .from('uploads')
-        .select('*')
-        .eq('id', uploadId)
+        .from("uploads")
+        .select("*")
+        .eq("id", uploadId)
         .single();
 
       if (uploadData) setUpload(uploadData);
 
       const { data: analysisData } = await supabase
-        .from('analysis_results')
-        .select('*')
-        .eq('upload_id', uploadId)
+        .from("analysis_results")
+        .select("*")
+        .eq("upload_id", uploadId)
         .single();
 
       if (analysisData) setAnalysis(analysisData);
@@ -62,23 +62,23 @@ export default function AnalysisDetailPage() {
     setGenerated(false);
 
     try {
-      const res = await fetch('/api/generate-report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/generate-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ uploadId }),
       });
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error || 'Failed to generate report');
+        throw new Error(err.error || "Failed to generate report");
       }
 
       // Download the PDF
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = `ShieldHer-Report-${analysis?.id?.substring(0, 8) || 'report'}.pdf`;
+      a.download = `ShieldHer-Report-${analysis?.id?.substring(0, 8) || "report"}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -87,8 +87,8 @@ export default function AnalysisDetailPage() {
 
       setTimeout(() => setGenerated(false), 4000);
     } catch (err) {
-      console.error('Export error:', err);
-      alert('Failed to generate report. Please try again.');
+      console.error("Export error:", err);
+      alert("Failed to generate report. Please try again.");
     } finally {
       setGenerating(false);
     }
@@ -135,12 +135,12 @@ export default function AnalysisDetailPage() {
               <span className={styles.dot}>•</span>
               <Clock size={13} />
               <span>
-                {new Date(analysis.created_at).toLocaleDateString('en-US', {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
+                {new Date(analysis.created_at).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
                 })}
               </span>
             </div>
@@ -155,10 +155,14 @@ export default function AnalysisDetailPage() {
           <div className={styles.exportBannerText}>
             <FileDown size={22} className={styles.exportBannerIcon} />
             <div>
-              <h3 className={styles.exportBannerTitle}>Export as Evidence PDF</h3>
+              <h3 className={styles.exportBannerTitle}>
+                Export as Evidence PDF
+              </h3>
               <p className={styles.exportBannerDesc}>
-                Generate a certified evidence report that <strong>can be used as supporting evidence</strong> when 
-                consulting a lawyer, counselor, or filing a complaint with the authorities.
+                Generate a certified evidence report that{" "}
+                <strong>can be used as supporting evidence</strong> when
+                consulting a lawyer, counselor, or filing a complaint with the
+                authorities.
               </p>
             </div>
           </div>
@@ -194,7 +198,11 @@ export default function AnalysisDetailPage() {
           Uploaded Screenshot
         </h2>
         <div className={styles.screenshotWrap}>
-          <img src={upload.file_url} alt="Chat screenshot" className={styles.screenshot} />
+          <img
+            src={upload.file_url}
+            alt="Chat screenshot"
+            className={styles.screenshot}
+          />
         </div>
       </div>
 
@@ -262,19 +270,20 @@ export default function AnalysisDetailPage() {
       )}
 
       {/* Manipulation Indicators */}
-      {details.manipulation_indicators && details.manipulation_indicators.length > 0 && (
-        <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>
-            <AlertTriangle size={18} />
-            Manipulation Indicators
-          </h2>
-          <ul className={styles.indicatorList}>
-            {details.manipulation_indicators.map((ind, i) => (
-              <li key={i}>{ind}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {details.manipulation_indicators &&
+        details.manipulation_indicators.length > 0 && (
+          <div className={styles.section}>
+            <h2 className={styles.sectionTitle}>
+              <AlertTriangle size={18} />
+              Manipulation Indicators
+            </h2>
+            <ul className={styles.indicatorList}>
+              {details.manipulation_indicators.map((ind, i) => (
+                <li key={i}>{ind}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
       {/* Recommendations */}
       {details.recommendations && details.recommendations.length > 0 && (
@@ -301,21 +310,30 @@ export default function AnalysisDetailPage() {
             <Scale size={18} />
             Preliminary Legal Analysis
           </h2>
-          <div className={styles.detailCard} style={{ borderLeft: '3px solid var(--accent)', background: 'linear-gradient(to right, rgba(217, 70, 239, 0.05), transparent)' }}>
-            <p style={{ fontWeight: 500, marginBottom: '1rem' }}>{details.legal_analysis.summary}</p>
-            {details.legal_analysis.potential_violations && details.legal_analysis.potential_violations.length > 0 && (
-              <div style={{ marginBottom: '1rem' }}>
-                <strong style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Potential Violations:</strong>
-                <ul className={styles.indicatorList}>
-                  {details.legal_analysis.potential_violations.map((violation, i) => (
-                    <li key={i}>{violation}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            <div style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: 'var(--radius)', color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-              <AlertTriangle size={16} style={{ color: 'var(--danger)', flexShrink: 0, marginTop: '2px' }} />
-              <p style={{ margin: 0 }}>
+          <div className={`${styles.detailCard} ${styles.legalCard}`}>
+            <p className={styles.legalSummary}>
+              {details.legal_analysis.summary}
+            </p>
+
+            {details.legal_analysis.potential_violations &&
+              details.legal_analysis.potential_violations.length > 0 && (
+                <div className={styles.legalViolations}>
+                  <strong className={styles.legalViolationsTitle}>
+                    Potential Violations:
+                  </strong>
+                  <ul className={styles.indicatorList}>
+                    {details.legal_analysis.potential_violations.map(
+                      (violation, i) => (
+                        <li key={i}>{violation}</li>
+                      ),
+                    )}
+                  </ul>
+                </div>
+              )}
+
+            <div className={styles.legalDisclaimer}>
+              <AlertTriangle size={16} className={styles.legalDisclaimerIcon} />
+              <p className={styles.legalDisclaimerText}>
                 <strong>Disclaimer:</strong> {details.legal_analysis.disclaimer}
               </p>
             </div>

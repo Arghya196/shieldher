@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useCallback, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { Upload, Image, X, CheckCircle, Loader } from 'lucide-react';
-import styles from './UploadZone.module.css';
+import { useCallback, useState } from "react";
+import { useDropzone } from "react-dropzone";
+import { Upload, X, CheckCircle, Loader } from "lucide-react";
+import styles from "./UploadZone.module.css";
 
 interface UploadedFile {
   file: File;
   preview: string;
-  status: 'ready' | 'uploading' | 'done' | 'error';
+  status: "ready" | "uploading" | "done" | "error";
 }
 
 interface UploadZoneProps {
@@ -16,7 +16,10 @@ interface UploadZoneProps {
   isUploading?: boolean;
 }
 
-export default function UploadZone({ onFilesSelected, isUploading = false }: UploadZoneProps) {
+export default function UploadZone({
+  onFilesSelected,
+  isUploading = false,
+}: UploadZoneProps) {
   const [files, setFiles] = useState<UploadedFile[]>([]);
 
   const onDrop = useCallback(
@@ -24,18 +27,18 @@ export default function UploadZone({ onFilesSelected, isUploading = false }: Upl
       const newFiles: UploadedFile[] = acceptedFiles.map((file) => ({
         file,
         preview: URL.createObjectURL(file),
-        status: 'ready' as const,
+        status: "ready" as const,
       }));
       setFiles((prev) => [...prev, ...newFiles]);
       onFilesSelected(acceptedFiles);
     },
-    [onFilesSelected]
+    [onFilesSelected],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.webp'],
+      "image/*": [".png", ".jpg", ".jpeg", ".webp"],
     },
     maxSize: 10 * 1024 * 1024, // 10MB
     multiple: true,
@@ -53,7 +56,7 @@ export default function UploadZone({ onFilesSelected, isUploading = false }: Upl
     <div className={styles.wrapper}>
       <div
         {...getRootProps()}
-        className={`${styles.dropzone} ${isDragActive ? styles.active : ''} ${isUploading ? styles.uploading : ''}`}
+        className={`${styles.dropzone} ${isDragActive ? styles.active : ""} ${isUploading ? styles.uploading : ""}`}
       >
         <input {...getInputProps()} />
         <div className={styles.dropContent}>
@@ -67,10 +70,10 @@ export default function UploadZone({ onFilesSelected, isUploading = false }: Upl
           <div className={styles.dropText}>
             <p className={styles.dropTitle}>
               {isDragActive
-                ? 'Drop your screenshots here'
+                ? "Drop your screenshots here"
                 : isUploading
-                  ? 'Uploading...'
-                  : 'Drag & drop chat screenshots'}
+                  ? "Uploading..."
+                  : "Drag & drop chat screenshots"}
             </p>
             <p className={styles.dropHint}>
               or click to browse • PNG, JPG, WebP up to 10MB
@@ -86,10 +89,16 @@ export default function UploadZone({ onFilesSelected, isUploading = false }: Upl
           {files.map((f, i) => (
             <div key={i} className={styles.preview}>
               <div className={styles.previewImgWrap}>
-                <img src={f.preview} alt={f.file.name} className={styles.previewImg} />
+                <img
+                  src={f.preview}
+                  alt={f.file.name}
+                  className={styles.previewImg}
+                />
                 <div className={styles.previewOverlay}>
-                  {f.status === 'uploading' && <Loader size={18} className="animate-spin" />}
-                  {f.status === 'done' && <CheckCircle size={18} />}
+                  {f.status === "uploading" && (
+                    <Loader size={18} className="animate-spin" />
+                  )}
+                  {f.status === "done" && <CheckCircle size={18} />}
                 </div>
               </div>
               <div className={styles.previewInfo}>
