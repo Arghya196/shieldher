@@ -9,13 +9,12 @@ import {
   History,
   FileDown,
   Settings,
-  LogOut,
+  Moon,
+  Sun,
   ChevronLeft,
   ChevronRight,
-  Sun,
-  Moon,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useTheme } from './ThemeProvider';
 import styles from './Sidebar.module.css';
@@ -33,6 +32,19 @@ export default function Sidebar() {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const [initial, setInitial] = useState('U');
+
+  useEffect(() => {
+    async function getUser() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const name = user.user_metadata?.full_name || user.email || 'User';
+        setInitial(name.charAt(0).toUpperCase());
+      }
+    }
+    getUser();
+  }, []);
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -46,7 +58,7 @@ export default function Sidebar() {
       <div className={styles.top}>
         <Link href="/dashboard" className={styles.logo}>
           <div className={styles.logoIcon}>
-            <Shield size={18} />
+            <Shield size={20} className={styles.shieldIcon} />
           </div>
           {!collapsed && <span className={styles.logoText}>ShieldHer</span>}
         </Link>
@@ -73,9 +85,9 @@ export default function Sidebar() {
               href={item.href}
               className={`${styles.navItem} ${isActive ? styles.active : ''}`}
             >
-              <item.icon size={20} />
-              {!collapsed && <span>{item.label}</span>}
               {isActive && <div className={styles.activeIndicator} />}
+              <item.icon size={20} className={styles.navIcon} />
+              {!collapsed && <span>{item.label}</span>}
             </Link>
           );
         })}
@@ -88,11 +100,11 @@ export default function Sidebar() {
           aria-label="Toggle theme"
           title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
         >
-          {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+          {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
           {!collapsed && <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>}
         </button>
-        <button className={styles.navItem} onClick={handleLogout}>
-          <LogOut size={20} />
+        <button className={styles.profileBtn} onClick={handleLogout}>
+          <div className={styles.avatarCircle}>{initial}</div>
           {!collapsed && <span>Log Out</span>}
         </button>
       </div>

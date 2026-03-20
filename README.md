@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ShieldHer — AI-Powered Women's Safety Platform
 
-## Getting Started
+ShieldHer is a premium web application designed to protect women and high-risk individuals from digital harm. By leveraging advanced AI analysis, ShieldHer helps users identify manipulation, threats, and harmful patterns in chat conversations.
 
-First, run the development server:
+## ✨ Key Features
 
+- **🛡️ AI Chat Analysis**: Upload screenshots of chat conversations (WhatsApp, Telegram, etc.) for instant analysis of manipulation, gaslighting, threats, and emotional tone.
+- **📄 Certified Evidence Export**: Generate branded, timestamped PDF reports of analysis results that can be shared with lawyers, counselors, or law enforcement.
+- **📥 Downloads Dashboard**: A central place to manage and re-download your generated evidence reports.
+- **🌙 Global Dark Mode**: A premium, Stripe-style interface with a focus on ease of use and visual comfort, with a one-click toggle for Dark/Light mode.
+- **👻 Ghost Mode (Automatic Purge)**: An optional privacy feature that automatically deletes your uploaded data and reports 24 hours after generation.
+
+## 🚀 Tech Stack
+
+- **Frontend**: Next.js 15, React, TypeScript, Lucide Icons
+- **Styling**: Vanilla CSS (Stripe-inspired Modern Design)
+- **Backend/Auth**: Supabase (Auth, PostgreSQL, Row Level Security)
+- **AI Engine**: Gemini 1.5 Flash (for high-speed, accurate safety analysis)
+- **PDF Engine**: jsPDF (for client-side/server-side certified reports)
+
+## 🛠️ Getting Started
+
+### 1. Prerequisites
+- [Node.js](https://nodejs.org/) (v18+)
+- [Supabase Account](https://supabase.com/)
+
+### 2. Setup
+Clone the repository and install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Environment Variables
+Create a `.env.local` file with your credentials:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+GEMINI_API_KEY=your_gemini_api_key
+CRON_SECRET=your_random_string_for_ghost_purge
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. Database Schema
+Ensure all required tables (`profiles`, `uploads`, `analysis_results`, `reports`) and storage buckets (`screenshots`, `reports`) are created in your Supabase project using the `supabase-schema.sql` file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 5. Running Localy
+```bash
+npm run dev
+```
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🔒 Privacy & Security
+ShieldHer is built with privacy-first principles:
+- **Row Level Security (RLS)**: Users can only see their own data.
+- **Ghost Mode**: Optional auto-deletion for maximum plausible deniability.
+- **Secure Storage**: Automated cleanup of associated files.

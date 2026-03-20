@@ -6,7 +6,8 @@ import { type Upload, type AnalysisResult } from '@/lib/types';
 import AnalysisCard from '@/components/AnalysisCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import RiskBadge from '@/components/RiskBadge';
-import { FileSearch, Clock, Image } from 'lucide-react';
+import { FileSearch, Clock, Image, ArrowLeft, Filter } from 'lucide-react';
+import Link from 'next/link';
 import styles from './page.module.css';
 
 interface UploadWithAnalysis extends Upload {
@@ -56,65 +57,95 @@ export default function HistoryPage() {
 
   return (
     <div className={styles.page}>
+      <Link href="/dashboard" className={styles.back}>
+        <ArrowLeft size={16} />
+        Back to Dashboard
+      </Link>
+
       <div className={styles.header}>
         <h1 className={styles.title}>Analysis History</h1>
         <p className={styles.subtitle}>
-          View all your past uploads and their analysis results
+          Browse your past screenshot uploads and review detailed AI analysis reports.
         </p>
       </div>
 
-      <div className={styles.filters}>
-        {(['all', 'flagged', 'safe'] as const).map((f) => (
-          <button
-            key={f}
-            className={`${styles.filterBtn} ${filter === f ? styles.active : ''}`}
-            onClick={() => setFilter(f)}
-          >
-            {f === 'all' ? 'All' : f === 'flagged' ? '🚨 Flagged' : '✅ Safe'}
-          </button>
-        ))}
+      <div className={styles.filtersWrapper}>
+        <div className={styles.filterIconWrap}>
+          <Filter size={18} />
+        </div>
+        <div className={styles.filters}>
+          {(['all', 'flagged', 'safe'] as const).map((f) => (
+            <button
+              key={f}
+              className={`${styles.filterBtn} ${filter === f ? styles.active : ''}`}
+              onClick={() => setFilter(f)}
+            >
+              <span className={styles.filterDot} data-type={f} />
+              {f === 'all' ? 'All Uploads' : f === 'flagged' ? 'Flagged Issues' : 'Safe Results'}
+            </button>
+          ))}
+        </div>
       </div>
 
       {filtered.length > 0 ? (
         <div className={styles.list}>
           {filtered.map((upload) => (
-            <div key={upload.id} className={styles.uploadItem}>
+            <div key={upload.id} className={styles.uploadCard}>
               <div className={styles.uploadHeader}>
                 <div className={styles.uploadInfo}>
-                  <Image size={16} className={styles.fileIcon} />
-                  <span className={styles.fileName}>{upload.file_name}</span>
-                  <span className={styles.uploadDate}>
-                    <Clock size={12} />
-                    {new Date(upload.created_at).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
-                  </span>
+                  <div className={styles.iconBox}>
+                    <Image size={24} />
+                  </div>
+                  <div>
+                    <span className={styles.fileName}>{upload.file_name}</span>
+                    <span className={styles.uploadDate}>
+                      <Clock size={12} />
+                      {new Date(upload.created_at).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                  </div>
                 </div>
-                <span className={`badge badge-${upload.status === 'flagged' ? 'high' : upload.status === 'completed' ? 'safe' : 'medium'}`}>
-                  {upload.status}
-                </span>
+                <div className={styles.statusBox}>
+                  <RiskBadge level={upload.status === 'flagged' ? 'high' : upload.status === 'completed' ? 'safe' : 'medium'} />
+                </div>
               </div>
 
-              {upload.analysis_results?.map((analysis) => (
-                <AnalysisCard
-                  key={analysis.id}
-                  analysis={analysis}
-                />
-              ))}
+              {upload.analysis_results && upload.analysis_results.length > 0 ? (
+                <div className={styles.analysisSection}>
+                  {upload.analysis_results.map((analysis) => (
+                    <AnalysisCard
+                      key={analysis.id}
+                      analysis={analysis}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.noAnalysis}>
+                  <p>Analysis is still processing for this upload.</p>
+                </div>
+              )}
             </div>
           ))}
         </div>
       ) : (
         <div className={styles.empty}>
-          <FileSearch size={48} />
+          <div className={styles.emptyIconWrap}>
+            <FileSearch size={32} />
+          </div>
           <h3>No results found</h3>
           <p>
             {filter !== 'all'
-              ? 'Try changing your filter'
-              : 'Upload some screenshots to get started'}
+              ? 'Try changing your filter to see more results.'
+              : 'Upload some screenshots to get started.'}
           </p>
+          <Link href="/dashboard/upload" className={styles.emptyButton}>
+            New Upload
+          </Link>
         </div>
       )}
     </div>

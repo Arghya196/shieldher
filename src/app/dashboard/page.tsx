@@ -3,14 +3,17 @@
 import { useEffect, useState } from 'react';
 import {
   Upload,
-  FileSearch,
+  BarChart3,
   ShieldCheck,
   AlertTriangle,
-  TrendingUp,
   ArrowRight,
+  CheckCircle,
+  AlertOctagon,
+  Info,
+  Plus,
+  MapPin,
+  FileSearch,
 } from 'lucide-react';
-import StatsCard from '@/components/StatsCard';
-import AnalysisCard from '@/components/AnalysisCard';
 import { type AnalysisResult, type Upload as UploadType } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
@@ -55,62 +58,230 @@ export default function DashboardPage() {
 
   const totalUploads = uploads.length;
   const analyzed = uploads.filter((u) => u.status === 'completed').length;
+  const analyzePercent = totalUploads > 0 ? ((analyzed / totalUploads) * 100).toFixed(1) : '0';
   const flagged = uploads.filter((u) => u.status === 'flagged').length;
   const safeCount = analyses.filter((a) => a.risk_level === 'safe' || a.risk_level === 'low').length;
 
+  const getRiskStyle = (level: string) => {
+    switch (level) {
+      case 'safe':
+      case 'low':
+        return {
+          accent: styles.accentBarSafe,
+          icon: styles.analysisIconSafe,
+          badge: styles.badgeSafe,
+          confidence: styles.confidenceSafe,
+          label: level === 'safe' ? 'Safe' : 'Low Risk',
+          IconComponent: CheckCircle,
+        };
+      case 'medium':
+        return {
+          accent: styles.accentBarMedium,
+          icon: styles.analysisIconMedium,
+          badge: styles.badgeMedium,
+          confidence: styles.confidenceMedium,
+          label: 'Medium Risk',
+          IconComponent: AlertTriangle,
+        };
+      case 'high':
+        return {
+          accent: styles.accentBarHigh,
+          icon: styles.analysisIconHigh,
+          badge: styles.badgeHigh,
+          confidence: styles.confidenceHigh,
+          label: 'High Risk',
+          IconComponent: AlertOctagon,
+        };
+      case 'critical':
+        return {
+          accent: styles.accentBarCritical,
+          icon: styles.analysisIconCritical,
+          badge: styles.badgeCritical,
+          confidence: styles.confidenceCritical,
+          label: 'Critical',
+          IconComponent: AlertOctagon,
+        };
+      default:
+        return {
+          accent: styles.accentBarSafe,
+          icon: styles.analysisIconSafe,
+          badge: styles.badgeSafe,
+          confidence: styles.confidenceSafe,
+          label: 'Safe',
+          IconComponent: CheckCircle,
+        };
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }) + ' • ' + d.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
   return (
     <div className={styles.page}>
-      <div className={styles.header}>
-        <div>
-          <h1 className={styles.greeting}>
-            Welcome back, <span className="gradient-text">{loading ? '...' : userName}</span>
-          </h1>
-          <p className={styles.subtitle}>Here&apos;s your safety overview</p>
+      {/* ═══ Hero Header ═══ */}
+      <section className={styles.heroSection}>
+        <div className={styles.heroContent}>
+          <p className={styles.heroLabel}>Guardian Dashboard</p>
+          <h2 className={styles.heroTitle}>
+            Welcome back, {loading ? '...' : userName}
+          </h2>
+          <p className={styles.heroSubtitle}>
+            Your safety intelligence suite is updated with the latest analysis data.
+          </p>
         </div>
-        <Link href="/dashboard/upload" className="btn btn-primary">
-          <Upload size={16} />
-          New Upload
+        <Link href="/dashboard/upload" className={styles.heroButton}>
+          <Plus size={18} />
+          <span>New Upload</span>
         </Link>
-      </div>
+      </section>
 
-      <div className={styles.statsGrid}>
-        <StatsCard
-          icon={<Upload size={20} />}
-          value={totalUploads}
-          label="Total Uploads"
-          trend="12%"
-          trendUp
-        />
-        <StatsCard
-          icon={<FileSearch size={20} />}
-          value={analyzed}
-          label="Analyzed"
-        />
-        <StatsCard
-          icon={<ShieldCheck size={20} />}
-          value={safeCount}
-          label="Safe Results"
-        />
-        <StatsCard
-          icon={<AlertTriangle size={20} />}
-          value={flagged}
-          label="Flagged"
-        />
-      </div>
+      {/* ═══ Stats Grid ═══ */}
+      <section className={styles.statsGrid}>
+        {/* Total Uploads */}
+        <div className={styles.statCard}>
+          <div className={styles.statCardHeader}>
+            <div className={`${styles.statIconWrap} ${styles.statIconDefault}`}>
+              <Upload size={20} />
+            </div>
+            <span className={styles.statTrend}>+12%</span>
+          </div>
+          <div className={styles.statBody}>
+            <p className={styles.statLabel}>Total Uploads</p>
+            <h3 className={styles.statValue}>{totalUploads}</h3>
+          </div>
+        </div>
 
-      <div className={styles.section}>
+        {/* Analyzed */}
+        <div className={styles.statCard}>
+          <div className={styles.statCardHeader}>
+            <div className={`${styles.statIconWrap} ${styles.statIconNeutral}`}>
+              <BarChart3 size={20} />
+            </div>
+          </div>
+          <div className={styles.statBody}>
+            <p className={styles.statLabel}>Analyzed</p>
+            <h3 className={styles.statValue}>{analyzePercent}%</h3>
+          </div>
+        </div>
+
+        {/* Safe Results */}
+        <div className={styles.statCard}>
+          <div className={styles.statCardHeader}>
+            <div className={`${styles.statIconWrap} ${styles.statIconSafe}`}>
+              <ShieldCheck size={20} />
+            </div>
+          </div>
+          <div className={styles.statBody}>
+            <p className={styles.statLabel}>Safe Results</p>
+            <h3 className={`${styles.statValue} ${styles.statValueSafe}`}>{safeCount}</h3>
+          </div>
+        </div>
+
+        {/* Flagged */}
+        <div className={styles.statCard}>
+          <div className={styles.statCardHeader}>
+            <div className={`${styles.statIconWrap} ${styles.statIconDanger}`}>
+              <AlertTriangle size={20} />
+            </div>
+          </div>
+          <div className={styles.statBody}>
+            <p className={styles.statLabel}>Flagged</p>
+            <h3 className={`${styles.statValue} ${styles.statValueDanger}`}>{flagged}</h3>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ Recent Analyses ═══ */}
+      <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Recent Analyses</h2>
+          <h3 className={styles.sectionTitle}>Recent Analyses</h3>
           <Link href="/dashboard/history" className={styles.viewAll}>
-            View All <ArrowRight size={14} />
+            View Archive
           </Link>
         </div>
 
         {analyses.length > 0 ? (
           <div className={styles.analysisList}>
-            {analyses.map((analysis) => (
-              <AnalysisCard key={analysis.id} analysis={analysis} />
-            ))}
+            {analyses.map((analysis) => {
+              const risk = getRiskStyle(analysis.risk_level);
+              const RiskIcon = risk.IconComponent;
+              const confidence = analysis.details?.confidence_score
+                ? `${analysis.details.confidence_score}%`
+                : '—';
+              const hasFlags = analysis.flags && analysis.flags.length > 0;
+              const isWarning = analysis.risk_level === 'medium' || analysis.risk_level === 'high' || analysis.risk_level === 'critical';
+
+              return (
+                <div key={analysis.id} className={styles.analysisCard}>
+                  {/* Accent bar */}
+                  <div className={`${styles.accentBar} ${risk.accent}`} />
+
+                  {/* Icon */}
+                  <div className={`${styles.analysisIcon} ${risk.icon}`}>
+                    <RiskIcon size={28} />
+                  </div>
+
+                  {/* Content */}
+                  <div className={styles.analysisContent}>
+                    <div className={styles.analysisMeta}>
+                      <span className={`${styles.analysisBadge} ${risk.badge}`}>
+                        {risk.label}
+                      </span>
+                      <span className={styles.analysisDate}>
+                        {formatDate(analysis.created_at)}
+                      </span>
+                    </div>
+                    <h4 className={styles.analysisTitle}>
+                      Upload Analysis #{analysis.upload_id.slice(0, 8)}
+                    </h4>
+
+                    {isWarning && hasFlags ? (
+                      <div className={`${styles.analysisWarningBox} ${
+                        analysis.risk_level === 'medium' ? styles.analysisWarningBoxMedium :
+                        styles.analysisWarningBoxHigh
+                      }`}>
+                        <p className={`${styles.warningText} ${
+                          analysis.risk_level !== 'medium' ? styles.warningTextBold : ''
+                        }`}>
+                          <Info size={14} style={{ flexShrink: 0, marginTop: 2 }} />
+                          {analysis.flags[0]?.description || analysis.summary}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className={styles.analysisSummary}>{analysis.summary}</p>
+                    )}
+                  </div>
+
+                  {/* Right side */}
+                  <div className={styles.analysisRight}>
+                    <div className={styles.confidenceBlock}>
+                      <p className={styles.confidenceLabel}>Confidence</p>
+                      <p className={`${styles.confidenceValue} ${risk.confidence}`}>
+                        {confidence}
+                      </p>
+                    </div>
+                    <Link
+                      href={`/dashboard/analysis/${analysis.upload_id}`}
+                      className={`${styles.arrowBtn} ${
+                        (analysis.risk_level === 'high' || analysis.risk_level === 'critical')
+                          ? styles.arrowBtnDanger : ''
+                      }`}
+                    >
+                      <ArrowRight size={18} />
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className={styles.empty}>
@@ -123,7 +294,90 @@ export default function DashboardPage() {
             </Link>
           </div>
         )}
-      </div>
+      </section>
+
+      {/* ═══ Insight Section ═══ */}
+      <section className={styles.insightGrid}>
+        {/* Intelligence Report Card */}
+        <div className={styles.insightCard}>
+          <div className={styles.insightContent}>
+            <h4 className={styles.insightTitle}>ShieldHer Intelligence Report</h4>
+            <p className={styles.insightText}>
+              Based on your recent uploads, we&apos;ve analyzed your conversation patterns.
+              Stay vigilant and keep uploading suspicious conversations for continuous monitoring.
+            </p>
+          </div>
+          <div className={styles.insightActions}>
+            <Link href="/dashboard/history" className={styles.insightBtnPrimary}>
+              Review Analyses
+            </Link>
+            <button className={styles.insightBtnSecondary}>Dismiss</button>
+          </div>
+          {/* Background blobs */}
+          <div className={styles.insightBlob1} />
+          <div className={styles.insightBlob2} />
+        </div>
+
+        {/* Regional Safety Pulse */}
+        <div className={styles.pulseCard}>
+          <h4 className={styles.pulseTitle}>Safety Overview</h4>
+          <div className={styles.pulseList}>
+            <div className={styles.pulseItem}>
+              <div className={styles.pulseItemLeft}>
+                <div className={styles.pulseItemIcon}>
+                  <MapPin size={20} />
+                </div>
+                <div className={styles.pulseItemInfo}>
+                  <p className={styles.pulseItemName}>Safe Results</p>
+                  <p className={styles.pulseItemSub}>All clear</p>
+                </div>
+              </div>
+              <div className={styles.pulseBar}>
+                <div
+                  className={`${styles.pulseBarFill} ${styles.pulseBarSafe}`}
+                  style={{ width: safeCount > 0 ? '80%' : '0%' }}
+                />
+              </div>
+            </div>
+
+            <div className={styles.pulseItem}>
+              <div className={styles.pulseItemLeft}>
+                <div className={styles.pulseItemIcon}>
+                  <AlertTriangle size={20} />
+                </div>
+                <div className={styles.pulseItemInfo}>
+                  <p className={styles.pulseItemName}>Flagged</p>
+                  <p className={styles.pulseItemSub}>Needs review</p>
+                </div>
+              </div>
+              <div className={styles.pulseBar}>
+                <div
+                  className={`${styles.pulseBarFill} ${styles.pulseBarMedium}`}
+                  style={{ width: flagged > 0 ? '50%' : '0%' }}
+                />
+              </div>
+            </div>
+
+            <div className={styles.pulseItem}>
+              <div className={styles.pulseItemLeft}>
+                <div className={styles.pulseItemIcon}>
+                  <ShieldCheck size={20} />
+                </div>
+                <div className={styles.pulseItemInfo}>
+                  <p className={styles.pulseItemName}>Total Analyzed</p>
+                  <p className={styles.pulseItemSub}>{analyzed} uploads</p>
+                </div>
+              </div>
+              <div className={styles.pulseBar}>
+                <div
+                  className={`${styles.pulseBarFill} ${styles.pulseBarSafe}`}
+                  style={{ width: analyzed > 0 ? '100%' : '0%' }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { User, Mail, Shield, LogOut, Save, Loader, Ghost, AlertTriangle } from 'lucide-react';
+import { User, Mail, Shield, LogOut, Save, Loader, Ghost, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import styles from './page.module.css';
 
 export default function SettingsPage() {
@@ -117,25 +118,35 @@ export default function SettingsPage() {
 
   return (
     <div className={styles.page}>
+      <Link href="/dashboard" className={styles.back}>
+        <ArrowLeft size={16} />
+        Back to Dashboard
+      </Link>
+
       <div className={styles.header}>
         <h1 className={styles.title}>Account Settings</h1>
-        <p className={styles.subtitle}>Manage your profile and account details.</p>
+        <p className={styles.subtitle}>Manage your profile, preferences, and account security.</p>
       </div>
 
       <div className={styles.container}>
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <User className={styles.cardIcon} size={20} />
-            <h2 className={styles.cardTitle}>Personal Information</h2>
+            <div className={styles.iconWrap}>
+              <User size={24} />
+            </div>
+            <div>
+              <h2 className={styles.cardTitle}>Personal Information</h2>
+              <p className={styles.cardDesc}>Update your basic profile details.</p>
+            </div>
           </div>
           
           <form onSubmit={handleSaveProfile} className={styles.form}>
             <div className={styles.field}>
-              <label className="label" htmlFor="fullName">Full Name</label>
+              <label className={styles.label} htmlFor="fullName">Full Name</label>
               <input
                 id="fullName"
                 type="text"
-                className="input"
+                className={styles.input}
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Your full name"
@@ -143,13 +154,13 @@ export default function SettingsPage() {
             </div>
             
             <div className={styles.field}>
-              <label className="label" htmlFor="email">Email Address</label>
+              <label className={styles.label} htmlFor="email">Email Address</label>
               <div className={styles.inputWrap}>
-                <Mail size={16} className={styles.inputIcon} />
+                <Mail size={18} className={styles.inputIcon} />
                 <input
                   id="email"
                   type="email"
-                  className={`input ${styles.inputWithIcon} ${styles.disabledInput}`}
+                  className={`${styles.input} ${styles.inputWithIcon} ${styles.disabledInput}`}
                   value={email}
                   disabled
                   readOnly
@@ -164,13 +175,13 @@ export default function SettingsPage() {
             <div className={styles.actions}>
               <button 
                 type="submit" 
-                className="btn btn-primary"
+                className={styles.saveBtn}
                 disabled={saving}
               >
                 {saving ? (
-                  <><Loader size={16} className="animate-spin" /> Saving...</>
+                  <><Loader size={18} className="animate-spin" /> Saving...</>
                 ) : (
-                  <><Save size={16} /> Save Changes</>
+                  <><Save size={18} /> Save Changes</>
                 )}
               </button>
             </div>
@@ -180,22 +191,28 @@ export default function SettingsPage() {
         {/* Ghost Mode Card */}
         <div className={`${styles.card} ${styles.ghostCard}`}>
           <div className={styles.cardHeader}>
-            <Ghost className={styles.ghostIcon} size={20} />
-            <h2 className={styles.cardTitle}>Ghost Mode</h2>
-            <span className={`${styles.ghostBadge} ${ghostMode ? styles.ghostBadgeActive : ''}`}>
-              {ghostMode ? 'ACTIVE' : 'OFF'}
-            </span>
+            <div className={`${styles.iconWrap} ${styles.ghostIconWrap}`}>
+              <Ghost size={24} />
+            </div>
+            <div className={styles.ghostHeaderGroup}>
+              <div>
+                <h2 className={styles.cardTitle}>Ghost Mode</h2>
+                <p className={styles.cardDesc}>Maximum privacy for high-risk situations.</p>
+              </div>
+              <span className={`${styles.ghostBadge} ${ghostMode ? styles.ghostBadgeActive : ''}`}>
+                {ghostMode ? 'ACTIVE' : 'OFF'}
+              </span>
+            </div>
           </div>
 
           <div className={styles.ghostContent}>
-            <p className={styles.ghostDesc}>
+            <p className={styles.ghostText}>
               When enabled, all your uploaded screenshots, analysis results, and generated reports 
-              will be <strong>automatically deleted 24 hours</strong> after creation. This provides 
-              maximum privacy for high-risk situations.
+              will be <strong>automatically deleted 24 hours</strong> after creation.
             </p>
 
             <div className={styles.ghostWarning}>
-              <AlertTriangle size={16} />
+              <AlertTriangle size={18} className={styles.warningIcon} />
               <p>
                 <strong>Warning:</strong> Deleted data cannot be recovered. Make sure to download 
                 any evidence PDFs you need before the 24-hour window expires.
@@ -206,7 +223,7 @@ export default function SettingsPage() {
               <div>
                 <span className={styles.ghostToggleLabel}>Auto-delete after 24 hours</span>
                 <span className={styles.ghostToggleHint}>
-                  {ghostMode ? 'Your data will be purged automatically' : 'Your data is stored permanently'}
+                  {ghostMode ? 'Your data will be purged automatically.' : 'Your data is stored permanently.'}
                 </span>
               </div>
               <button
@@ -225,15 +242,20 @@ export default function SettingsPage() {
 
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <Shield className={styles.cardIcon} size={20} color="var(--danger)" />
-            <h2 className={styles.cardTitle}>Security & Access</h2>
+            <div className={`${styles.iconWrap} ${styles.dangerIconWrap}`}>
+              <Shield size={24} />
+            </div>
+            <div>
+              <h2 className={styles.cardTitle}>Security & Access</h2>
+              <p className={styles.cardDesc}>Manage your session.</p>
+            </div>
           </div>
           
           <div className={styles.securitySection}>
             <p className={styles.securityText}>
               Ensure your account remains secure. You can sign out of your account on this device here.
             </p>
-            <button onClick={handleSignOut} className="btn btn-secondary">
+            <button onClick={handleSignOut} className={styles.signOutBtn}>
               <LogOut size={16} />
               Sign Out
             </button>

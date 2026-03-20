@@ -1,91 +1,203 @@
 .page {
-  max-width: 720px;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
 }
 
 .back {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-muted);
-  margin-bottom: 24px;
-  transition: color var(--transition-fast);
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  width: fit-content;
 }
 
 .back:hover {
-  color: var(--text-primary);
+  color: var(--accent-primary);
+  transform: translateX(-4px);
 }
 
 .header {
-  margin-bottom: 32px;
+  margin-bottom: 16px;
 }
 
 .title {
-  font-family: var(--font-display);
-  font-size: 28px;
+  font-family: var(--font-headline);
+  font-size: clamp(32px, 5vw, 40px);
   font-weight: 800;
-  margin-bottom: 8px;
+  line-height: 1.1;
+  color: var(--text-primary);
+  margin-bottom: 12px;
 }
 
 .subtitle {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--text-secondary);
-  line-height: 1.7;
+  line-height: 1.6;
+  max-width: 600px;
+}
+
+.bentoContainer {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+/* ═══ Upload Card ═══ */
+.uploadCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2.5rem;
+  padding: 40px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  position: relative;
+  /* Glass effect */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .error {
-  margin-top: 16px;
-  padding: 12px 16px;
+  padding: 16px;
   background: var(--risk-high-bg);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: var(--radius-md);
-  color: var(--risk-high);
-  font-size: 13px;
-  font-weight: 500;
+  border-radius: var(--radius-lg);
+  color: var(--risk-critical);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
 }
 
 .actions {
   display: flex;
   justify-content: center;
-  margin-top: 24px;
 }
 
-.tips {
-  margin-top: 40px;
-  padding: 24px;
+.analyzeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px 48px;
+  background: linear-gradient(135deg, var(--accent-primary), #5551c2);
+  color: white;
+  border-radius: var(--radius-full);
+  font-family: var(--font-headline);
+  font-weight: 800;
+  font-size: 16px;
+  box-shadow: 0 8px 24px rgba(99, 91, 255, 0.25);
+  transition: all var(--transition-base);
+  min-width: 240px;
+}
+
+.analyzeButton:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(99, 91, 255, 0.35);
+}
+
+.analyzeButton:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.analyzeButton:disabled {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* ═══ Tips Card ═══ */
+.tipsCard {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-}
-
-.tips h3 {
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 12px;
-}
-
-.tips ul {
-  list-style: none;
+  border-radius: 2rem;
+  padding: 32px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 20px;
+  /* Glass effect */
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
-.tips li {
+[data-theme="dark"] .tipsCard {
+  background: rgba(26, 35, 50, 0.6);
+}
+
+.tipsHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tipsIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--accent-primary-dim);
+  color: var(--accent-primary);
+}
+
+.tipsHeader h3 {
+  font-family: var(--font-headline);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.tipsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-left: 8px;
+  list-style: none;
+}
+
+.tipsList li {
   font-size: 14px;
   color: var(--text-secondary);
-  padding-left: 20px;
+  line-height: 1.5;
   position: relative;
+  padding-left: 20px;
 }
 
-.tips li::before {
-  content: '✦';
+.tipsList li::before {
+  content: '';
   position: absolute;
   left: 0;
-  color: var(--accent-primary);
-  font-size: 10px;
-  top: 3px;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+}
+
+@media (max-width: 1024px) {
+  .bentoContainer {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 28px;
+  }
+  
+  .uploadCard {
+    padding: 24px;
+    border-radius: 2rem;
+  }
 }

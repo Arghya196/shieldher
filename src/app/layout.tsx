@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
+import { Manrope } from "next/font/google";
 import "./globals.css";
 import ThemeProvider from "@/components/ThemeProvider";
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-headline",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "ShieldHer — AI-Powered Women's Safety Platform",
@@ -15,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={manrope.variable}>
       <body>
         <ThemeProvider>{children}</ThemeProvider>
       </body>

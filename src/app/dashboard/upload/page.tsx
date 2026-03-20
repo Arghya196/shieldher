@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Sparkles, Loader } from 'lucide-react';
+import { ArrowLeft, Sparkles, Loader, Info } from 'lucide-react';
 import Link from 'next/link';
 import UploadZone from '@/components/UploadZone';
 import { createClient } from '@/lib/supabase/client';
@@ -102,46 +102,54 @@ export default function UploadPage() {
         </p>
       </div>
 
-      <UploadZone onFilesSelected={handleFilesSelected} isUploading={uploading} />
-
-      {error && (
-        <div className={styles.error}>{error}</div>
-      )}
-
-      <div className={styles.actions}>
-        <button
-          className="btn btn-primary btn-lg"
-          onClick={handleAnalyze}
-          disabled={files.length === 0 || uploading || analyzing}
-          style={{ minWidth: 200 }}
-        >
-          {uploading ? (
-            <>
-              <Loader size={18} className="animate-spin" />
-              Uploading...
-            </>
-          ) : analyzing ? (
-            <>
-              <Loader size={18} className="animate-spin" />
-              Analyzing...
-            </>
-          ) : (
-            <>
-              <Sparkles size={18} />
-              Analyze {files.length > 0 ? `(${files.length})` : ''}
-            </>
+      <div className={styles.bentoContainer}>
+        <div className={styles.uploadCard}>
+          <UploadZone onFilesSelected={handleFilesSelected} isUploading={uploading} />
+          
+          {error && (
+            <div className={styles.error}>{error}</div>
           )}
-        </button>
-      </div>
 
-      <div className={styles.tips}>
-        <h3>Tips for best results</h3>
-        <ul>
-          <li>Take clear, full-screen screenshots of the chat</li>
-          <li>Include the full conversation thread when possible</li>
-          <li>Make sure text is readable and not blurry</li>
-          <li>You can upload multiple screenshots at once</li>
-        </ul>
+          <div className={styles.actions}>
+            <button
+              className={styles.analyzeButton}
+              onClick={handleAnalyze}
+              disabled={files.length === 0 || uploading || analyzing}
+            >
+              {uploading ? (
+                <>
+                  <Loader size={18} className="animate-spin" />
+                  Uploading...
+                </>
+              ) : analyzing ? (
+                <>
+                  <Loader size={18} className="animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Sparkles size={18} />
+                  Analyze {files.length > 0 ? `(${files.length})` : ''}
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        <div className={styles.tipsCard}>
+          <div className={styles.tipsHeader}>
+            <div className={styles.tipsIcon}>
+              <Info size={20} />
+            </div>
+            <h3>Tips for best results</h3>
+          </div>
+          <ul className={styles.tipsList}>
+            <li>Take clear, full-screen screenshots of the chat</li>
+            <li>Include the full conversation thread when possible</li>
+            <li>Make sure text is readable and not blurry</li>
+            <li>You can upload multiple screenshots at once</li>
+          </ul>
+        </div>
       </div>
     </div>
   );
