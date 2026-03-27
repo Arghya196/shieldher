@@ -58,7 +58,7 @@ export default function HeroSection() {
           src="/auratein.jpeg"
           alt="Auratein Background"
           fill
-          style={{ objectFit: "cover" }}
+          style={{ objectFit: "cover", objectPosition: "left center" }}
           priority
         />
         <div className={styles.overlay} />

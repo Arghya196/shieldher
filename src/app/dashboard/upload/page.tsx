@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { ArrowLeft, Sparkles, Loader, Info, AlertTriangle, Lightbulb, Scale } from 'lucide-react';
 import Link from 'next/link';
 import UploadZone from '@/components/UploadZone';
@@ -17,7 +16,6 @@ export default function UploadPage() {
   const [error, setError] = useState('');
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [showFullAnalysis, setShowFullAnalysis] = useState(false);
-  const router = useRouter();
 
   const handleFilesSelected = (newFiles: File[]) => {
     setFiles((prev) => [...prev, ...newFiles]);
@@ -93,6 +91,10 @@ export default function UploadPage() {
       setAnalyzing(false);
     }
   };
+  const potentialViolations =
+    analysisResult?.details?.legal_analysis?.potential_violations
+      ?.map((item) => item.trim())
+      .filter((item) => item.length > 0) ?? [];
 
   return (
     <div className={styles.page}>
@@ -217,6 +219,18 @@ export default function UploadPage() {
                         <Scale size={18} /> Legal Perspective
                       </div>
                       <p className={styles.legalSummary}>{analysisResult.details.legal_analysis.summary}</p>
+                      {potentialViolations.length > 0 && (
+                          <div className={styles.legalSectionsBlock}>
+                            <h4 className={styles.legalSectionsTitle}>
+                              Possible Applicable Sections / Articles
+                            </h4>
+                            <ul className={styles.legalSectionsList}>
+                              {potentialViolations.map((violation, idx) => (
+                                <li key={`${violation}-${idx}`}>{violation}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       <p className={styles.disclaimer}>{analysisResult.details.legal_analysis.disclaimer}</p>
                     </div>
                   )}
