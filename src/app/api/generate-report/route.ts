@@ -319,9 +319,12 @@ export async function POST(request: NextRequest) {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
         for (const violation of details.legal_analysis.potential_violations) {
-          addPageIfNeeded(6);
-          doc.text(sanitizeText(`- ${violation}`), margin + 4, y);
-          y += 5;
+          const violationLines = doc.splitTextToSize(sanitizeText(`- ${violation}`), contentWidth - 4);
+          for (let i = 0; i < violationLines.length; i++) {
+            addPageIfNeeded(5);
+            doc.text(violationLines[i], margin + 4, y + i * 4.5);
+          }
+          y += violationLines.length * 4.5 + 0.5;
         }
         y += 4;
       }
