@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
 import ThemeProvider from "@/components/ThemeProvider";
+import BouncingCube from "@/components/BouncingCube";
+import { LanguageProvider } from "@/components/LanguageProvider";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -24,7 +26,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={manrope.variable}>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <LanguageProvider>
+            {children}
+            <BouncingCube />
+          </LanguageProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

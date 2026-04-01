@@ -4,6 +4,7 @@ import { type AnalysisResult } from '@/lib/types';
 import RiskBadge from './RiskBadge';
 import { AlertTriangle, Clock, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage } from './LanguageProvider';
 import styles from './AnalysisCard.module.css';
 
 interface AnalysisCardProps {
@@ -13,6 +14,7 @@ interface AnalysisCardProps {
 }
 
 export default function AnalysisCard({ analysis, fileName, showLink = true }: AnalysisCardProps) {
+  const { t } = useLanguage();
   const flagCount = analysis.flags?.length || 0;
   const date = new Date(analysis.created_at).toLocaleDateString('en-US', {
     month: 'short',
@@ -40,7 +42,9 @@ export default function AnalysisCard({ analysis, fileName, showLink = true }: An
         <div className={styles.flags}>
           <div className={styles.flagHeader}>
             <AlertTriangle size={14} />
-            <span>{flagCount} flag{flagCount !== 1 ? 's' : ''} detected</span>
+            <span>
+              {flagCount} {t.analysisCard.flagsDetected}
+            </span>
           </div>
           <div className={styles.flagList}>
             {analysis.flags.slice(0, 3).map((flag, i) => (
@@ -50,7 +54,7 @@ export default function AnalysisCard({ analysis, fileName, showLink = true }: An
               </div>
             ))}
             {flagCount > 3 && (
-              <span className={styles.moreFlags}>+{flagCount - 3} more</span>
+              <span className={styles.moreFlags}>+{flagCount - 3} {t.analysisCard.more}</span>
             )}
           </div>
         </div>
@@ -61,7 +65,7 @@ export default function AnalysisCard({ analysis, fileName, showLink = true }: An
           href={`/dashboard/analysis/${analysis.upload_id}`}
           className={styles.link}
         >
-          View Full Analysis
+          {t.analysisCard.viewFull}
           <ArrowRight size={14} />
         </Link>
       )}

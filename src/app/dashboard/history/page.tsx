@@ -8,6 +8,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import RiskBadge from "@/components/RiskBadge";
 import { FileSearch, Clock, ImageIcon, ArrowLeft, Filter } from "lucide-react";
 import Link from "next/link";
+import { useLanguage } from "@/components/LanguageProvider";
 import styles from "./page.module.css";
 
 interface UploadWithAnalysis extends Upload {
@@ -15,6 +16,7 @@ interface UploadWithAnalysis extends Upload {
 }
 
 export default function HistoryPage() {
+  const { t } = useLanguage();
   const [uploads, setUploads] = useState<UploadWithAnalysis[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "flagged" | "safe">("all");
@@ -54,7 +56,7 @@ export default function HistoryPage() {
     return (
       <div className={styles.page}>
         <div className={styles.loadingWrap}>
-          <LoadingSpinner text="Loading history..." />
+          <LoadingSpinner text={t.historyPage.loading} />
         </div>
       </div>
     );
@@ -64,14 +66,13 @@ export default function HistoryPage() {
     <div className={styles.page}>
       <Link href="/dashboard" className={styles.back}>
         <ArrowLeft size={16} />
-        Back to Dashboard
+        {t.historyPage.backToDashboard}
       </Link>
 
       <div className={styles.header}>
-        <h1 className={styles.title}>Analysis History</h1>
+        <h1 className={styles.title}>{t.historyPage.title}</h1>
         <p className={styles.subtitle}>
-          Browse your past screenshot uploads and review detailed AI analysis
-          reports.
+          {t.historyPage.subtitle}
         </p>
       </div>
 
@@ -88,10 +89,10 @@ export default function HistoryPage() {
             >
               <span className={styles.filterDot} data-type={f} />
               {f === "all"
-                ? "All Uploads"
+                ? t.historyPage.allUploads
                 : f === "flagged"
-                  ? "Flagged Issues"
-                  : "Safe Results"}
+                  ? t.historyPage.flaggedIssues
+                  : t.historyPage.safeResults}
             </button>
           ))}
         </div>
@@ -141,7 +142,7 @@ export default function HistoryPage() {
                 </div>
               ) : (
                 <div className={styles.noAnalysis}>
-                  <p>Analysis is still processing for this upload.</p>
+                  <p>{t.historyPage.processing}</p>
                 </div>
               )}
             </div>
@@ -152,14 +153,14 @@ export default function HistoryPage() {
           <div className={styles.emptyIconWrap}>
             <FileSearch size={32} />
           </div>
-          <h3>No results found</h3>
+          <h3>{t.historyPage.noResults}</h3>
           <p>
             {filter !== "all"
-              ? "Try changing your filter to see more results."
-              : "Upload some screenshots to get started."}
+              ? t.historyPage.tryFilter
+              : t.historyPage.uploadStart}
           </p>
           <Link href="/dashboard/upload" className={styles.emptyButton}>
-            New Upload
+            {t.historyPage.newUpload}
           </Link>
         </div>
       )}

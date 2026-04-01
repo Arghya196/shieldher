@@ -5,9 +5,11 @@ import { createClient } from '@/lib/supabase/client';
 import { User, Mail, Shield, LogOut, Save, Loader, Ghost, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useLanguage } from '@/components/LanguageProvider';
 import styles from './page.module.css';
 
 export default function SettingsPage() {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [fullName, setFullName] = useState('');
@@ -64,9 +66,9 @@ export default function SettingsPage() {
       .eq('id', user.id);
 
     if (updateError) {
-      setError('Failed to update profile name.');
+      setError(t.settingsPage.profileUpdateFailed);
     } else {
-      setMessage('Profile updated successfully.');
+      setMessage(t.settingsPage.profileUpdated);
     }
     
     setSaving(false);
@@ -90,10 +92,10 @@ export default function SettingsPage() {
       .eq('id', user.id);
 
     if (updateError) {
-      setError('Failed to update Ghost Mode setting.');
+      setError(t.settingsPage.ghostUpdateFailed);
     } else {
       setGhostMode(newValue);
-      setMessage(newValue ? 'Ghost Mode enabled — data will be auto-deleted after 24 hours.' : 'Ghost Mode disabled.');
+      setMessage(newValue ? t.settingsPage.ghostEnabled : t.settingsPage.ghostDisabled);
     }
     
     setTogglingGhost(false);
@@ -111,6 +113,7 @@ export default function SettingsPage() {
       <div className={styles.page}>
          <div className="flex justify-center items-center h-64">
            <Loader className="animate-spin text-accent" size={32} />
+           <span style={{ marginLeft: 10 }}>{t.settingsPage.loading}</span>
          </div>
       </div>
     );
@@ -120,12 +123,12 @@ export default function SettingsPage() {
     <div className={styles.page}>
       <Link href="/dashboard" className={styles.back}>
         <ArrowLeft size={16} />
-        Back to Dashboard
+        {t.settingsPage.backToDashboard}
       </Link>
 
       <div className={styles.header}>
-        <h1 className={styles.title}>Account Settings</h1>
-        <p className={styles.subtitle}>Manage your profile, preferences, and account security.</p>
+        <h1 className={styles.title}>{t.settingsPage.title}</h1>
+        <p className={styles.subtitle}>{t.settingsPage.subtitle}</p>
       </div>
 
       <div className={styles.container}>
@@ -135,26 +138,26 @@ export default function SettingsPage() {
               <User size={24} />
             </div>
             <div>
-              <h2 className={styles.cardTitle}>Personal Information</h2>
-              <p className={styles.cardDesc}>Update your basic profile details.</p>
+              <h2 className={styles.cardTitle}>{t.settingsPage.personalInfo}</h2>
+              <p className={styles.cardDesc}>{t.settingsPage.personalDesc}</p>
             </div>
           </div>
           
           <form onSubmit={handleSaveProfile} className={styles.form}>
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="fullName">Full Name</label>
+              <label className={styles.label} htmlFor="fullName">{t.settingsPage.fullName}</label>
               <input
                 id="fullName"
                 type="text"
                 className={styles.input}
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="Your full name"
+                placeholder={t.settingsPage.fullNamePlaceholder}
               />
             </div>
             
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="email">Email Address</label>
+              <label className={styles.label} htmlFor="email">{t.settingsPage.emailAddress}</label>
               <div className={styles.inputWrap}>
                 <Mail size={18} className={styles.inputIcon} />
                 <input
@@ -166,7 +169,7 @@ export default function SettingsPage() {
                   readOnly
                 />
               </div>
-              <p className={styles.helpText}>Email address cannot be changed currently.</p>
+              <p className={styles.helpText}>{t.settingsPage.emailImmutable}</p>
             </div>
 
             {error && <div className={styles.error}>{error}</div>}
@@ -179,9 +182,9 @@ export default function SettingsPage() {
                 disabled={saving}
               >
                 {saving ? (
-                  <><Loader size={18} className="animate-spin" /> Saving...</>
+                  <><Loader size={18} className="animate-spin" /> {t.settingsPage.saving}</>
                 ) : (
-                  <><Save size={18} /> Save Changes</>
+                  <><Save size={18} /> {t.settingsPage.saveChanges}</>
                 )}
               </button>
             </div>
@@ -196,34 +199,32 @@ export default function SettingsPage() {
             </div>
             <div className={styles.ghostHeaderGroup}>
               <div>
-                <h2 className={styles.cardTitle}>Ghost Mode</h2>
-                <p className={styles.cardDesc}>Maximum privacy for high-risk situations.</p>
+                <h2 className={styles.cardTitle}>{t.settingsPage.ghostMode}</h2>
+                <p className={styles.cardDesc}>{t.settingsPage.ghostDesc}</p>
               </div>
               <span className={`${styles.ghostBadge} ${ghostMode ? styles.ghostBadgeActive : ''}`}>
-                {ghostMode ? 'ACTIVE' : 'OFF'}
+                {ghostMode ? t.settingsPage.active : t.settingsPage.off}
               </span>
             </div>
           </div>
 
           <div className={styles.ghostContent}>
             <p className={styles.ghostText}>
-              When enabled, all your uploaded screenshots, analysis results, and generated reports 
-              will be <strong>automatically deleted 24 hours</strong> after creation.
+              {t.settingsPage.ghostText}
             </p>
 
             <div className={styles.ghostWarning}>
               <AlertTriangle size={18} className={styles.warningIcon} />
               <p>
-                <strong>Warning:</strong> Deleted data cannot be recovered. Make sure to download 
-                any evidence PDFs you need before the 24-hour window expires.
+                <strong>{t.settingsPage.warningTitle}:</strong> {t.settingsPage.warningText}
               </p>
             </div>
 
             <div className={styles.ghostToggleRow}>
               <div>
-                <span className={styles.ghostToggleLabel}>Auto-delete after 24 hours</span>
+                <span className={styles.ghostToggleLabel}>{t.settingsPage.autoDelete}</span>
                 <span className={styles.ghostToggleHint}>
-                  {ghostMode ? 'Your data will be purged automatically.' : 'Your data is stored permanently.'}
+                  {ghostMode ? t.settingsPage.autoDeleteOn : t.settingsPage.autoDeleteOff}
                 </span>
               </div>
               <button
@@ -232,7 +233,7 @@ export default function SettingsPage() {
                 disabled={togglingGhost}
                 role="switch"
                 aria-checked={ghostMode}
-                aria-label="Toggle Ghost Mode"
+                aria-label={t.settingsPage.toggleGhost}
               >
                 <span className={styles.toggleKnob} />
               </button>
@@ -246,18 +247,18 @@ export default function SettingsPage() {
               <Shield size={24} />
             </div>
             <div>
-              <h2 className={styles.cardTitle}>Security & Access</h2>
-              <p className={styles.cardDesc}>Manage your session.</p>
+              <h2 className={styles.cardTitle}>{t.settingsPage.securityAccess}</h2>
+              <p className={styles.cardDesc}>{t.settingsPage.manageSession}</p>
             </div>
           </div>
           
           <div className={styles.securitySection}>
             <p className={styles.securityText}>
-              Ensure your account remains secure. You can sign out of your account on this device here.
+              {t.settingsPage.sessionText}
             </p>
             <button onClick={handleSignOut} className={styles.signOutBtn}>
               <LogOut size={16} />
-              Sign Out
+              {t.settingsPage.signOut}
             </button>
           </div>
         </div>

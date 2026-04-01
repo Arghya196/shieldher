@@ -127,8 +127,9 @@ export async function POST(request: NextRequest) {
       const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
       result = JSON.parse(cleanText);
 
-    } catch (aiError: any) {
-      console.error('Gemini Analysis Failed:', aiError?.message || aiError);
+    } catch (aiError: unknown) {
+      const errorMessage = aiError instanceof Error ? aiError.message : String(aiError);
+      console.error('Gemini Analysis Failed:', errorMessage);
       // Fallback on error so app doesn't break
       await supabase.from('uploads').update({ status: 'completed' }).eq('id', uploadId);
       return NextResponse.json({ error: 'AI Analysis failed to process file' }, { status: 500 });

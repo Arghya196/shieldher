@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -22,8 +23,10 @@ import {
   CheckCircle,
 } from "lucide-react";
 import styles from "./page.module.css";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function AnalysisDetailPage() {
+  const { t } = useLanguage();
   const params = useParams();
   const uploadId = params.id as string;
   const [upload, setUpload] = useState<Upload | null>(null);
@@ -70,7 +73,7 @@ export default function AnalysisDetailPage() {
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error || "Failed to generate report");
+        throw new Error(err.error || t.analysisDetailPage.failedGenerate);
       }
 
       // Download the PDF
@@ -88,7 +91,7 @@ export default function AnalysisDetailPage() {
       setTimeout(() => setGenerated(false), 4000);
     } catch (err) {
       console.error("Export error:", err);
-      alert("Failed to generate report. Please try again.");
+      alert(t.analysisDetailPage.failedGenerateAlert);
     } finally {
       setGenerating(false);
     }
@@ -98,7 +101,7 @@ export default function AnalysisDetailPage() {
     return (
       <div className={styles.page}>
         <div className={styles.loadingWrap}>
-          <LoadingSpinner text="Loading analysis..." />
+          <LoadingSpinner text={t.analysisDetailPage.loading} />
         </div>
       </div>
     );
@@ -108,9 +111,9 @@ export default function AnalysisDetailPage() {
     return (
       <div className={styles.page}>
         <div className={styles.empty}>
-          <h3>Analysis not found</h3>
+          <h3>{t.analysisDetailPage.notFound}</h3>
           <Link href="/dashboard/history" className="btn btn-secondary">
-            Back to History
+            {t.analysisDetailPage.backToHistory}
           </Link>
         </div>
       </div>
@@ -140,10 +143,10 @@ export default function AnalysisDetailPage() {
     const kind = getFileKind(url);
     const label =
       kind === "image"
-        ? `Screenshot ${index + 1}`
+        ? `${t.analysisDetailPage.screenshot} ${index + 1}`
         : kind === "audio"
-          ? `Audio Recording ${index + 1}`
-          : `File ${index + 1}`;
+          ? `${t.analysisDetailPage.audioRecording} ${index + 1}`
+          : `${t.analysisDetailPage.file} ${index + 1}`;
     return { url, kind, label };
   });
 
@@ -151,13 +154,13 @@ export default function AnalysisDetailPage() {
     <div className={styles.page}>
       <Link href="/dashboard/history" className={styles.back}>
         <ArrowLeft size={16} />
-        Back to History
+        {t.analysisDetailPage.backToHistory}
       </Link>
 
       <div className={styles.header}>
         <div className={styles.headerTop}>
           <div>
-            <h1 className={styles.title}>Analysis Report</h1>
+            <h1 className={styles.title}>{t.analysisDetailPage.reportTitle}</h1>
             <div className={styles.meta}>
               <span>{upload.file_name}</span>
               <span className={styles.dot}>•</span>
@@ -184,13 +187,10 @@ export default function AnalysisDetailPage() {
             <FileDown size={22} className={styles.exportBannerIcon} />
             <div>
               <h3 className={styles.exportBannerTitle}>
-                Export as Evidence PDF
+                {t.analysisDetailPage.exportTitle}
               </h3>
               <p className={styles.exportBannerDesc}>
-                Generate a certified evidence report that{" "}
-                <strong>can be used as supporting evidence</strong> when
-                consulting a lawyer, counselor, or filing a complaint with the
-                authorities.
+                {t.analysisDetailPage.exportDesc}
               </p>
             </div>
           </div>
@@ -202,17 +202,17 @@ export default function AnalysisDetailPage() {
             {generating ? (
               <>
                 <Loader size={18} className="animate-spin" />
-                Generating...
+                {t.analysisDetailPage.generating}
               </>
             ) : generated ? (
               <>
                 <CheckCircle size={18} />
-                Downloaded!
+                {t.analysisDetailPage.downloaded}
               </>
             ) : (
               <>
                 <FileDown size={18} />
-                Download PDF Report
+                {t.analysisDetailPage.downloadPdf}
               </>
             )}
           </button>
@@ -223,7 +223,7 @@ export default function AnalysisDetailPage() {
       <div className={styles.screenshotSection}>
         <h2 className={styles.sectionTitle}>
           <Target size={18} />
-          Uploaded Evidence
+          {t.analysisDetailPage.uploadedEvidence}
         </h2>
         <div className={styles.mediaGrid}>
           {mediaItems.map((item) => (
@@ -239,7 +239,7 @@ export default function AnalysisDetailPage() {
               ) : item.kind === "audio" ? (
                 <audio controls className={styles.audioPlayer}>
                   <source src={item.url} />
-                  Your browser does not support the audio element.
+                  {t.analysisDetailPage.audioNotSupported}
                 </audio>
               ) : (
                 <a
@@ -248,7 +248,7 @@ export default function AnalysisDetailPage() {
                   rel="noreferrer"
                   className={styles.mediaLink}
                 >
-                  Open uploaded file
+                  {t.analysisDetailPage.openFile}
                 </a>
               )}
             </div>
@@ -260,13 +260,13 @@ export default function AnalysisDetailPage() {
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>
           <Brain size={18} />
-          Analysis Summary
+          {t.analysisDetailPage.analysisSummary}
         </h2>
         <div className={styles.summaryCard}>
           <p>{analysis.summary}</p>
           {details.confidence_score !== undefined && (
             <div className={styles.confidence}>
-              <span>Confidence:</span>
+              <span>{t.analysisDetailPage.confidence}:</span>
               <div className={styles.confidenceBar}>
                 <div
                   className={styles.confidenceFill}
@@ -284,7 +284,7 @@ export default function AnalysisDetailPage() {
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>
             <AlertTriangle size={18} />
-            Detected Flags ({analysis.flags.length})
+            {t.analysisDetailPage.detectedFlags} ({analysis.flags.length})
           </h2>
           <div className={styles.flagGrid}>
             {analysis.flags.map((flag, i) => (
@@ -311,7 +311,7 @@ export default function AnalysisDetailPage() {
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>
             <MessageSquare size={18} />
-            Tone Analysis
+            {t.analysisDetailPage.toneAnalysis}
           </h2>
           <div className={styles.detailCard}>
             <p>{details.tone_analysis}</p>
@@ -325,7 +325,7 @@ export default function AnalysisDetailPage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>
               <AlertTriangle size={18} />
-              Manipulation Indicators
+              {t.analysisDetailPage.manipulationIndicators}
             </h2>
             <ul className={styles.indicatorList}>
               {details.manipulation_indicators.map((ind, i) => (
@@ -340,7 +340,7 @@ export default function AnalysisDetailPage() {
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>
             <Lightbulb size={18} />
-            Recommendations
+            {t.analysisDetailPage.recommendations}
           </h2>
           <ul className={styles.recList}>
             {details.recommendations.map((rec, i) => (
@@ -358,7 +358,7 @@ export default function AnalysisDetailPage() {
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>
             <Scale size={18} />
-            Preliminary Legal Analysis
+            {t.analysisDetailPage.legalAnalysis}
           </h2>
           <div className={`${styles.detailCard} ${styles.legalCard}`}>
             <p className={styles.legalSummary}>
@@ -369,7 +369,7 @@ export default function AnalysisDetailPage() {
               details.legal_analysis.potential_violations.length > 0 && (
                 <div className={styles.legalViolations}>
                   <strong className={styles.legalViolationsTitle}>
-                    Potential Violations:
+                    {t.analysisDetailPage.potentialViolations}
                   </strong>
                   <ul className={styles.indicatorList}>
                     {details.legal_analysis.potential_violations.map(
@@ -384,7 +384,7 @@ export default function AnalysisDetailPage() {
             <div className={styles.legalDisclaimer}>
               <AlertTriangle size={16} className={styles.legalDisclaimerIcon} />
               <p className={styles.legalDisclaimerText}>
-                <strong>Disclaimer:</strong> {details.legal_analysis.disclaimer}
+                <strong>{t.analysisDetailPage.disclaimer}</strong> {details.legal_analysis.disclaimer}
               </p>
             </div>
           </div>

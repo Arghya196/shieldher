@@ -1,3 +1,5 @@
+'use client';
+
 import Navbar from "@/components/Navbar";
 import Image from "next/image";
 import HeroSection from "@/components/HeroSection";
@@ -15,92 +17,24 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import styles from "./page.module.css";
+import { useLanguage } from "@/components/LanguageProvider";
 
-const features = [
-  {
-    icon: <Brain size={24} />,
-    title: "AI-Powered Analysis",
-    description:
-      "Advanced AI examines your chat screenshots for manipulation tactics, gaslighting, coercion, and threatening language patterns.",
-  },
-  {
-    icon: <Eye size={24} />,
-    title: "Pattern Detection",
-    description:
-      "Identifies recurring toxic behavior patterns across multiple conversations to reveal escalating threats over time.",
-  },
-  {
-    icon: <Shield size={24} />,
-    title: "Risk Assessment",
-    description:
-      "Each analysis provides a clear risk level from Safe to Critical, helping you understand the severity of the situation.",
-  },
-  {
-    icon: <Zap size={24} />,
-    title: "Instant Results",
-    description:
-      "Get detailed analysis results in under 30 seconds. No waiting, no appointments — protection at your fingertips.",
-  },
-  {
-    icon: <Lock size={24} />,
-    title: "Complete Privacy & Ghost Mode",
-    description:
-      "Your uploads are encrypted and never shared. Use Ghost Mode to leave no trace. Only you can access your analysis history and results.",
-  },
-  {
-    icon: <Scale size={24} />,
-    title: "Legal Insights",
-    description:
-      "Get preliminary legal analysis highlighting potential violations, giving you a starting point for professional legal consultation.",
-  },
-];
-
-const steps = [
-  {
-    number: "01",
-    title: "Upload Screenshot",
-    description:
-      "Take a screenshot of any chat conversation and upload it to ShieldHer. We accept all major image formats.",
-  },
-  {
-    number: "02",
-    title: "AI Analyzes",
-    description:
-      "Our AI reads and analyzes the conversation for harmful patterns, red flags, and potential legal violations.",
-  },
-  {
-    number: "03",
-    title: "Get Results",
-    description:
-      "Receive a detailed risk assessment with specific flags, legal insights, and safety recommendations.",
-  },
-];
-
-const testimonials = [
-  {
-    quote:
-      "ShieldHer gave me the clarity I needed. It identified manipulation patterns I couldn't see myself.",
-    name: "Sarah M.",
-    role: "Early User",
-    initial: "S",
-  },
-  {
-    quote:
-      "The legal analysis feature was a game-changer. It helped my lawyer understand the situation immediately.",
-    name: "Priya K.",
-    role: "Advocate",
-    initial: "P",
-  },
-  {
-    quote:
-      "Finally a tool that takes digital safety seriously. The AI is incredibly accurate at detecting subtle threats.",
-    name: "Aisha R.",
-    role: "Counselor",
-    initial: "A",
-  },
-];
+const featureIcons = [Brain, Eye, Shield, Zap, Lock, Scale];
 
 export default function Home() {
+  const { t } = useLanguage();
+
+  const features = (t.home.features ?? []).map((feature, index) => {
+    const Icon = featureIcons[index] ?? Shield;
+    return {
+      icon: <Icon size={24} />,
+      title: feature.title,
+      description: feature.description,
+    };
+  });
+  const steps = t.home.steps ?? [];
+  const testimonials = t.home.testimonials ?? [];
+
   return (
     <>
       <Navbar />
@@ -114,35 +48,35 @@ export default function Home() {
           <div className={`container ${styles.statsBannerInner}`}>
             <ScrollReveal>
               <h2 className={styles.statsBannerTitle}>
-                The backbone of
+                {t.home.statsBannerTitleLine1}
                 <br />
-                digital safety
+                {t.home.statsBannerTitleLine2}
               </h2>
             </ScrollReveal>
             <ScrollReveal delay={100}>
               <div className={styles.statsBannerGrid}>
                 <div className={styles.statItem}>
-                  <span className={styles.statValue}>10K+</span>
+                  <span className={styles.statValue}>{t.home.statsBannerStats[0].value}</span>
                   <span className={styles.statName}>
-                    screenshots analyzed with AI-powered insights
+                    {t.home.statsBannerStats[0].label}
                   </span>
                 </div>
                 <div className={styles.statItem}>
-                  <span className={styles.statValue}>98%</span>
+                  <span className={styles.statValue}>{t.home.statsBannerStats[1].value}</span>
                   <span className={styles.statName}>
-                    detection accuracy across threat categories
+                    {t.home.statsBannerStats[1].label}
                   </span>
                 </div>
                 <div className={styles.statItem}>
-                  <span className={styles.statValue}>&lt;30s</span>
+                  <span className={styles.statValue}>{t.home.statsBannerStats[2].value}</span>
                   <span className={styles.statName}>
-                    average analysis time per screenshot
+                    {t.home.statsBannerStats[2].label}
                   </span>
                 </div>
                 <div className={styles.statItem}>
-                  <span className={styles.statValue}>24/7</span>
+                  <span className={styles.statValue}>{t.home.statsBannerStats[3].value}</span>
                   <span className={styles.statName}>
-                    always available when you need it most
+                    {t.home.statsBannerStats[3].label}
                   </span>
                 </div>
               </div>
@@ -155,14 +89,13 @@ export default function Home() {
           <div className="container">
             <ScrollReveal>
               <div className={styles.sectionHeader}>
-                <span className={styles.sectionTag}>Features</span>
+                <span className={styles.sectionTag}>{t.home.featuresSection.tag}</span>
                 <h2 className={styles.sectionTitle}>
-                  Everything you need to{" "}
-                  <span className="gradient-text">stay safe</span>
+                  {t.home.featuresSection.titlePrefix}{" "}
+                  <span className="gradient-text">{t.home.featuresSection.titleAccent}</span>
                 </h2>
                 <p className={styles.sectionSubtitle}>
-                  Powerful AI tools designed specifically for detecting and
-                  analyzing harmful communication patterns.
+                  {t.home.featuresSection.subtitle}
                 </p>
               </div>
             </ScrollReveal>
@@ -181,10 +114,10 @@ export default function Home() {
           <div className="container">
             <ScrollReveal>
               <div className={styles.sectionHeader}>
-                <span className={styles.sectionTag}>How It Works</span>
+                <span className={styles.sectionTag}>{t.home.howItWorksSection.tag}</span>
                 <h2 className={styles.sectionTitle}>
-                  Simple. Fast.{" "}
-                  <span className="gradient-text">Effective.</span>
+                  {t.home.howItWorksSection.titlePrefix}{" "}
+                  <span className="gradient-text">{t.home.howItWorksSection.titleAccent}</span>
                 </h2>
               </div>
             </ScrollReveal>
@@ -207,14 +140,13 @@ export default function Home() {
           <div className="container">
             <ScrollReveal>
               <div className={styles.sectionHeader}>
-                <span className={styles.sectionTag}>Trusted</span>
+                <span className={styles.sectionTag}>{t.home.trustSection.tag}</span>
                 <h2 className={styles.sectionTitle}>
-                  Real people.{" "}
-                  <span className="gradient-text">Real protection.</span>
+                  {t.home.trustSection.titlePrefix}{" "}
+                  <span className="gradient-text">{t.home.trustSection.titleAccent}</span>
                 </h2>
                 <p className={styles.sectionSubtitle}>
-                  Hear from people whose lives have been positively impacted by
-                  ShieldHer.
+                  {t.home.trustSection.subtitle}
                 </p>
               </div>
             </ScrollReveal>
@@ -243,27 +175,24 @@ export default function Home() {
             <ScrollReveal direction="scale">
               <div className={styles.ctaCard}>
                 <div className={styles.ctaContent}>
-                  <h2 className={styles.ctaTitle}>Your safety matters</h2>
-                  <p className={styles.ctaSubtitle}>
-                    Start analyzing your conversations today. It takes less than
-                    a minute to sign up and get your first analysis.
-                  </p>
+                  <h2 className={styles.ctaTitle}>{t.home.cta.title}</h2>
+                  <p className={styles.ctaSubtitle}>{t.home.cta.subtitle}</p>
                   <div className={styles.ctaChecks}>
                     <div className={styles.ctaCheck}>
                       <CheckCircle size={16} />
-                      <span>100% Free to start</span>
+                      <span>{t.home.cta.checks[0]}</span>
                     </div>
                     <div className={styles.ctaCheck}>
                       <CheckCircle size={16} />
-                      <span>No credit card required</span>
+                      <span>{t.home.cta.checks[1]}</span>
                     </div>
                     <div className={styles.ctaCheck}>
                       <CheckCircle size={16} />
-                      <span>Fully encrypted & private</span>
+                      <span>{t.home.cta.checks[2]}</span>
                     </div>
                   </div>
                   <Link href="/auth" className={styles.ctaBtnPrimary}>
-                    Get Started Free
+                    {t.home.cta.button}
                     <ArrowRight size={18} />
                   </Link>
                 </div>
@@ -277,12 +206,11 @@ export default function Home() {
           <div className="container">
             <div className={styles.footerInner}>
               <Link href="/" className={styles.footerLogo} style={{textDecoration: 'none'}}>
-                <Image src="/logo.png.jpeg" alt="ShieldHer Logo" width={32} height={32} style={{ objectFit: 'contain' }} />
+                <Image src="/first_attached_logo.png" alt="ShieldHer Logo" width={56} height={56} style={{ objectFit: 'contain' }} />
                 <span>ShieldHer</span>
               </Link>
               <p className={styles.footerText}>
-                © {new Date().getFullYear()} ShieldHer. Built with care for
-                women&apos;s safety.
+                © {new Date().getFullYear()} ShieldHer. {t.home.footer.textSuffix}
               </p>
             </div>
           </div>

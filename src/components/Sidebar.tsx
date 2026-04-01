@@ -17,15 +17,8 @@ import {
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "./ThemeProvider";
+import { useLanguage } from "./LanguageProvider";
 import styles from "./Sidebar.module.css";
-
-const navItems = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/dashboard/upload", icon: Upload, label: "Upload" },
-  { href: "/dashboard/history", icon: History, label: "History" },
-  { href: "/dashboard/downloads", icon: FileDown, label: "Downloads" },
-  { href: "/dashboard/settings", icon: Settings, label: "Settings" },
-];
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -39,7 +32,15 @@ export default function Sidebar() {
     };
   }, [collapsed]);
   const { theme, toggleTheme } = useTheme();
+  const { t } = useLanguage();
   const [initial, setInitial] = useState("U");
+  const navItems = [
+    { href: "/dashboard", icon: LayoutDashboard, label: t.sidebar.nav.dashboard },
+    { href: "/dashboard/upload", icon: Upload, label: t.sidebar.nav.upload },
+    { href: "/dashboard/history", icon: History, label: t.sidebar.nav.history },
+    { href: "/dashboard/downloads", icon: FileDown, label: t.sidebar.nav.downloads },
+    { href: "/dashboard/settings", icon: Settings, label: t.sidebar.nav.settings },
+  ];
 
   useEffect(() => {
     async function getUser() {
@@ -66,22 +67,20 @@ export default function Sidebar() {
     <aside className={`${styles.sidebar} ${collapsed ? styles.collapsed : ""}`}>
       <div className={styles.top}>
         <Link href="/" className={styles.logo}>
-          <div className={styles.logoIcon}>
-            <Image 
-              src="/logo.png.jpeg"
-              alt="ShieldHer Logo"
-              width={38}
-              height={38}
-              className={styles.customLogoImage}
-            />
-          </div>
+          <Image 
+            src="/first_attached_logo.png"
+            alt="ShieldHer Logo"
+            width={56}
+            height={56}
+            className={styles.customLogoImage}
+          />
           {!collapsed && <span className={styles.logoText}>ShieldHer</span>}
         </Link>
 
         <button
           className={styles.collapseBtn}
           onClick={() => setCollapsed(!collapsed)}
-          aria-label="Toggle sidebar"
+          aria-label={t.sidebar.toggleSidebar}
         >
           {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
@@ -112,19 +111,19 @@ export default function Sidebar() {
         <button
           className={styles.themeToggle}
           onClick={toggleTheme}
-          aria-label="Toggle theme"
+          aria-label={theme === "light" ? t.navbar.switchToDark : t.navbar.switchToLight}
           title={
-            theme === "light" ? "Switch to dark mode" : "Switch to light mode"
+            theme === "light" ? t.navbar.switchToDark : t.navbar.switchToLight
           }
         >
           {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
           {!collapsed && (
-            <span>{theme === "light" ? "Dark Mode" : "Light Mode"}</span>
+            <span>{theme === "light" ? t.sidebar.darkMode : t.sidebar.lightMode}</span>
           )}
         </button>
         <button className={styles.profileBtn} onClick={handleLogout}>
           <div className={styles.avatarCircle}>{initial}</div>
-          {!collapsed && <span>Log Out</span>}
+          {!collapsed && <span>{t.sidebar.logOut}</span>}
         </button>
       </div>
     </aside>

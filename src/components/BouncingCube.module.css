@@ -1,0 +1,66 @@
+.cube {
+  position: fixed;
+  top: var(--start-y);
+  left: var(--start-x);
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ff6eb4, #ff2d87, #c72cff);
+  box-shadow:
+    0 0 18px 6px rgba(255, 80, 170, 0.7),
+    0 0 40px 10px rgba(200, 40, 255, 0.4);
+  transform: translate(-50%, 0);
+  pointer-events: none;
+  z-index: 9999;
+  animation: cubeDrop 2.1s ease-in forwards;
+}
+
+@keyframes cubeDrop {
+  0% {
+    top: var(--start-y);
+    left: var(--start-x);
+    transform: translate(-50%, 0) rotate(0deg);
+    opacity: 1;
+  }
+  /* first landing */
+  38% {
+    top: var(--land1);
+    left: var(--start-x);
+    transform: translate(-50%, 0) rotate(160deg) scaleX(1.1) scaleY(0.85);
+    animation-timing-function: cubic-bezier(0.0, 0.0, 0.2, 1);
+  }
+  /* first bounce up */
+  52% {
+    top: var(--bounce1);
+    left: var(--start-x);
+    transform: translate(-50%, 0) rotate(210deg) scaleY(1.1);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  /* second landing */
+  67% {
+    top: var(--land2);
+    left: var(--start-x);
+    transform: translate(-50%, 0) rotate(300deg) scaleX(1.1) scaleY(0.9);
+    animation-timing-function: cubic-bezier(0.0, 0.0, 0.2, 1);
+  }
+  /* second bounce up (smaller) */
+  80% {
+    top: var(--bounce2);
+    left: var(--start-x);
+    transform: translate(-50%, 0) rotate(345deg);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  /* settle */
+  92% {
+    top: var(--land1);
+    left: var(--start-x);
+    transform: translate(-50%, 0) rotate(360deg) scaleX(1.04) scaleY(0.96);
+    opacity: 1;
+  }
+  100% {
+    top: var(--land1);
+    left: var(--start-x);
+    transform: translate(-50%, 0) rotate(360deg);
+    opacity: 0;
+  }
+}

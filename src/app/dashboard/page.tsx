@@ -13,16 +13,17 @@ import {
   Plus,
   MapPin,
   FileSearch,
-  MessageSquare,
   Scale,
   Lightbulb,
 } from 'lucide-react';
 import { type AnalysisResult, type Upload as UploadType } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
+import { useLanguage } from '@/components/LanguageProvider';
 import styles from './page.module.css';
 
 export default function DashboardPage() {
+  const { t } = useLanguage();
   const [userName, setUserName] = useState('');
   const [uploads, setUploads] = useState<UploadType[]>([]);
   const [analyses, setAnalyses] = useState<AnalysisResult[]>([]);
@@ -80,7 +81,7 @@ export default function DashboardPage() {
           icon: styles.analysisIconSafe,
           badge: styles.badgeSafe,
           confidence: styles.confidenceSafe,
-          label: level === 'safe' ? 'Safe' : 'Low Risk',
+          label: level === 'safe' ? t.riskBadge.safe : t.dashboard.riskLabels.low,
           IconComponent: CheckCircle,
         };
       case 'medium':
@@ -89,7 +90,7 @@ export default function DashboardPage() {
           icon: styles.analysisIconMedium,
           badge: styles.badgeMedium,
           confidence: styles.confidenceMedium,
-          label: 'Medium Risk',
+          label: t.dashboard.riskLabels.medium,
           IconComponent: AlertTriangle,
         };
       case 'high':
@@ -98,7 +99,7 @@ export default function DashboardPage() {
           icon: styles.analysisIconHigh,
           badge: styles.badgeHigh,
           confidence: styles.confidenceHigh,
-          label: 'High Risk',
+          label: t.dashboard.riskLabels.high,
           IconComponent: AlertOctagon,
         };
       case 'critical':
@@ -107,7 +108,7 @@ export default function DashboardPage() {
           icon: styles.analysisIconCritical,
           badge: styles.badgeCritical,
           confidence: styles.confidenceCritical,
-          label: 'Critical',
+          label: t.riskBadge.critical,
           IconComponent: AlertOctagon,
         };
       default:
@@ -116,7 +117,7 @@ export default function DashboardPage() {
           icon: styles.analysisIconSafe,
           badge: styles.badgeSafe,
           confidence: styles.confidenceSafe,
-          label: 'Safe',
+          label: t.riskBadge.safe,
           IconComponent: CheckCircle,
         };
     }
@@ -139,17 +140,17 @@ export default function DashboardPage() {
       {/* ═══ Hero Header ═══ */}
       <section className={styles.heroSection}>
         <div className={styles.heroContent}>
-          <p className={styles.heroLabel}>Guardian Dashboard</p>
+          <p className={styles.heroLabel}>{t.dashboard.heroLabel}</p>
           <h2 className={styles.heroTitle}>
-            Welcome back, {loading ? '...' : userName}
+            {t.dashboard.welcomeBack}, {loading ? '...' : userName}
           </h2>
           <p className={styles.heroSubtitle}>
-            Your safety intelligence suite is updated with the latest analysis data.
+            {t.dashboard.heroSubtitle}
           </p>
         </div>
         <Link href="/dashboard/upload" className={styles.heroButton}>
           <Plus size={18} />
-          <span>New Upload</span>
+          <span>{t.dashboard.newUpload}</span>
         </Link>
       </section>
 
@@ -164,7 +165,7 @@ export default function DashboardPage() {
             <span className={styles.statTrend}>+12%</span>
           </div>
           <div className={styles.statBody}>
-            <p className={styles.statLabel}>Total Uploads</p>
+            <p className={styles.statLabel}>{t.dashboard.totalUploads}</p>
             <h3 className={styles.statValue}>{totalUploads}</h3>
           </div>
         </div>
@@ -177,7 +178,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className={styles.statBody}>
-            <p className={styles.statLabel}>Analyzed</p>
+            <p className={styles.statLabel}>{t.dashboard.analyzed}</p>
             <h3 className={styles.statValue}>{analyzePercent}%</h3>
           </div>
         </div>
@@ -190,7 +191,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className={styles.statBody}>
-            <p className={styles.statLabel}>Safe Results</p>
+            <p className={styles.statLabel}>{t.dashboard.safeResults}</p>
             <h3 className={`${styles.statValue} ${styles.statValueSafe}`}>{safeCount}</h3>
           </div>
         </div>
@@ -203,7 +204,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className={styles.statBody}>
-            <p className={styles.statLabel}>Flagged</p>
+            <p className={styles.statLabel}>{t.dashboard.flagged}</p>
             <h3 className={`${styles.statValue} ${styles.statValueDanger}`}>{flagged}</h3>
           </div>
         </div>
@@ -212,9 +213,9 @@ export default function DashboardPage() {
       {/* ═══ Recent Analyses ═══ */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h3 className={styles.sectionTitle}>Recent Analyses</h3>
+          <h3 className={styles.sectionTitle}>{t.dashboard.recentAnalyses}</h3>
           <Link href="/dashboard/history" className={styles.viewAll}>
-            View Archive
+            {t.dashboard.viewArchive}
           </Link>
         </div>
 
@@ -255,7 +256,7 @@ export default function DashboardPage() {
                       </span>
                     </div>
                     <h4 className={styles.analysisTitle}>
-                      Upload Analysis #{analysis.upload_id.slice(0, 8)}
+                      {t.dashboard.uploadAnalysis} #{analysis.upload_id.slice(0, 8)}
                     </h4>
 
                     {isWarning && hasFlags ? (
@@ -278,7 +279,7 @@ export default function DashboardPage() {
                   {/* Right side */}
                   <div className={styles.analysisRight}>
                     <div className={styles.confidenceBlock}>
-                      <p className={styles.confidenceLabel}>Confidence</p>
+                      <p className={styles.confidenceLabel}>{t.dashboard.confidence}</p>
                       <p className={`${styles.confidenceValue} ${risk.confidence}`}>
                         {confidence}
                       </p>
@@ -304,7 +305,7 @@ export default function DashboardPage() {
                     {hasFlags && (
                       <div className={styles.detailsSection}>
                         <div className={styles.detailsSectionTitle}>
-                          <AlertTriangle size={14} /> Detected Flags
+                          <AlertTriangle size={14} /> {t.dashboard.detectedFlags}
                         </div>
                         <div className={styles.flagsList}>
                           {analysis.flags.map((flag, idx) => (
@@ -320,7 +321,7 @@ export default function DashboardPage() {
                     {analysis.details?.recommendations && analysis.details.recommendations.length > 0 && (
                       <div className={styles.detailsSection}>
                         <div className={styles.detailsSectionTitle}>
-                          <Lightbulb size={14} /> Recommendations
+                          <Lightbulb size={14} /> {t.dashboard.recommendations}
                         </div>
                         <div className={styles.listItems}>
                           {analysis.details.recommendations.map((rec, idx) => (
@@ -333,7 +334,7 @@ export default function DashboardPage() {
                     {analysis.details?.legal_analysis && (
                       <div className={styles.detailsSection}>
                         <div className={styles.detailsSectionTitle}>
-                          <Scale size={14} /> Legal Perspective
+                          <Scale size={14} /> {t.dashboard.legalPerspective}
                         </div>
                         <p className={styles.detailsText}>{analysis.details.legal_analysis.summary}</p>
                       </div>
@@ -341,7 +342,7 @@ export default function DashboardPage() {
                     
                     <div style={{ marginTop: '4px', textAlign: 'right' }}>
                       <Link href={`/dashboard/analysis/${analysis.upload_id}`} style={{ fontSize: '13px', color: 'var(--accent-primary)', fontWeight: 'bold', textDecoration: 'none' }}>
-                        Generate PDF Report &rarr;
+                        {t.dashboard.generatePdf} &rarr;
                       </Link>
                     </div>
                   </div>
@@ -353,11 +354,11 @@ export default function DashboardPage() {
         ) : (
           <div className={styles.empty}>
             <FileSearch size={48} />
-            <h3>No analyses yet</h3>
-            <p>Upload your first chat screenshot to get started</p>
+            <h3>{t.dashboard.noAnalyses}</h3>
+            <p>{t.dashboard.uploadFirst}</p>
             <Link href="/dashboard/upload" className="btn btn-primary">
               <Upload size={16} />
-              Upload Screenshot
+              {t.dashboard.uploadScreenshot}
             </Link>
           </div>
         )}
@@ -368,17 +369,16 @@ export default function DashboardPage() {
         {/* Intelligence Report Card */}
         <div className={styles.insightCard}>
           <div className={styles.insightContent}>
-            <h4 className={styles.insightTitle}>ShieldHer Intelligence Report</h4>
+            <h4 className={styles.insightTitle}>{t.dashboard.intelligenceReport}</h4>
             <p className={styles.insightText}>
-              Based on your recent uploads, we&apos;ve analyzed your conversation patterns.
-              Stay vigilant and keep uploading suspicious conversations for continuous monitoring.
+              {t.dashboard.intelligenceText}
             </p>
           </div>
           <div className={styles.insightActions}>
             <Link href="/dashboard/history" className={styles.insightBtnPrimary}>
-              Review Analyses
+              {t.dashboard.reviewAnalyses}
             </Link>
-            <button className={styles.insightBtnSecondary}>Dismiss</button>
+            <button className={styles.insightBtnSecondary}>{t.dashboard.dismiss}</button>
           </div>
           {/* Background blobs */}
           <div className={styles.insightBlob1} />
@@ -387,7 +387,7 @@ export default function DashboardPage() {
 
         {/* Regional Safety Pulse */}
         <div className={styles.pulseCard}>
-          <h4 className={styles.pulseTitle}>Safety Overview</h4>
+          <h4 className={styles.pulseTitle}>{t.dashboard.safetyOverview}</h4>
           <div className={styles.pulseList}>
             <div className={styles.pulseItem}>
               <div className={styles.pulseItemLeft}>
@@ -395,8 +395,8 @@ export default function DashboardPage() {
                   <MapPin size={20} />
                 </div>
                 <div className={styles.pulseItemInfo}>
-                  <p className={styles.pulseItemName}>Safe Results</p>
-                  <p className={styles.pulseItemSub}>All clear</p>
+                  <p className={styles.pulseItemName}>{t.dashboard.safeResults}</p>
+                  <p className={styles.pulseItemSub}>{t.dashboard.allClear}</p>
                 </div>
               </div>
               <div className={styles.pulseBar}>
@@ -413,8 +413,8 @@ export default function DashboardPage() {
                   <AlertTriangle size={20} />
                 </div>
                 <div className={styles.pulseItemInfo}>
-                  <p className={styles.pulseItemName}>Flagged</p>
-                  <p className={styles.pulseItemSub}>Needs review</p>
+                  <p className={styles.pulseItemName}>{t.dashboard.flagged}</p>
+                  <p className={styles.pulseItemSub}>{t.dashboard.needsReview}</p>
                 </div>
               </div>
               <div className={styles.pulseBar}>
@@ -431,8 +431,8 @@ export default function DashboardPage() {
                   <ShieldCheck size={20} />
                 </div>
                 <div className={styles.pulseItemInfo}>
-                  <p className={styles.pulseItemName}>Total Analyzed</p>
-                  <p className={styles.pulseItemSub}>{analyzed} uploads</p>
+                  <p className={styles.pulseItemName}>{t.dashboard.totalAnalyzed}</p>
+                  <p className={styles.pulseItemSub}>{analyzed} {t.dashboard.uploadsSuffix}</p>
                 </div>
               </div>
               <div className={styles.pulseBar}>

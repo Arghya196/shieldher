@@ -1,14 +1,13 @@
+'use client';
+
 import Link from 'next/link';
-import type { Metadata } from 'next';
 import { ArrowRight, Scale, Shield, UserRound } from 'lucide-react';
 import styles from './page.module.css';
-
-export const metadata: Metadata = {
-  title: 'Choose Login Type - ShieldHer',
-  description: 'Choose whether you want to continue as a user or lawyer.',
-};
+import { useLanguage } from '@/components/LanguageProvider';
 
 export default function AuthPage() {
+  const { t } = useLanguage();
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.card}>
@@ -16,9 +15,9 @@ export default function AuthPage() {
           <div className={styles.logoIcon}>
             <Shield size={24} />
           </div>
-          <h1 className={styles.title}>Choose Login Type</h1>
+          <h1 className={styles.title}>{t.authChoice.title}</h1>
           <p className={styles.subtitle}>
-            Select how you want to continue to the signup page.
+            {t.authChoice.subtitle}
           </p>
         </div>
 
@@ -28,8 +27,8 @@ export default function AuthPage() {
               <UserRound size={20} />
             </div>
             <div className={styles.optionText}>
-              <h2>User Login</h2>
-              <p>Continue as an individual user</p>
+              <h2>{t.authChoice.userTitle}</h2>
+              <p>{t.authChoice.userDesc}</p>
             </div>
             <ArrowRight size={18} className={styles.optionArrow} />
           </Link>
@@ -39,8 +38,8 @@ export default function AuthPage() {
               <Scale size={20} />
             </div>
             <div className={styles.optionText}>
-              <h2>Lawyer Login</h2>
-              <p>Continue as a legal professional</p>
+              <h2>{t.authChoice.lawyerTitle}</h2>
+              <p>{t.authChoice.lawyerDesc}</p>
             </div>
             <ArrowRight size={18} className={styles.optionArrow} />
           </Link>
