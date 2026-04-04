@@ -389,12 +389,22 @@ export default function Home() {
       <section className="cta-section">
         <div className="cta-inner">
           <Reveal>
-            <h2>Confidence starts with a single step.</h2>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1.5rem" }}>
-              <Link href="/auth" className="cta-btn-primary">
-                Join Shield Her Today
-              </Link>
-              <p className="cta-note">Free to start — no credit card required.</p>
+            <div className="footer-cta-card">
+              <div className="footer-cta-aurora footer-cta-aurora-1" aria-hidden="true" />
+              <div className="footer-cta-aurora footer-cta-aurora-2" aria-hidden="true" />
+              <div className="footer-cta-aurora footer-cta-aurora-3" aria-hidden="true" />
+              <div className="footer-cta-aurora footer-cta-aurora-4" aria-hidden="true" />
+
+              <div className="footer-cta-content">
+                <h2>Make every day feel safer.</h2>
+                <p>
+                  Take the next step with AI-powered threat analysis, private Ghost
+                  Mode, and trusted support from Shield Her.
+                </p>
+                <Link href="/auth" className="footer-cta-btn">
+                  Start Your Free Safety Check
+                </Link>
+              </div>
             </div>
           </Reveal>
         </div>
@@ -408,7 +418,8 @@ export default function Home() {
           <div className="footer-brand">
             <div className="footer-logo">Shield Her</div>
             <p className="footer-tagline">
-              © {new Date().getFullYear()} Shield Her. Built for protection and peace of mind. All rights reserved.
+              © {new Date().getFullYear()} Shield Her. Built for digital safety,
+              privacy, and peace of mind.
             </p>
           </div>
 
@@ -421,12 +432,12 @@ export default function Home() {
             <div className="footer-link-group">
               <h5>Trust</h5>
               <a href="#">Security Report</a>
-              <a href="#">Contact Us</a>
+              <a href="#">Data Protection</a>
             </div>
             <div className="footer-link-group">
               <h5>Support</h5>
               <a href="#">Help Center</a>
-              <a href="#">FAQ</a>
+              <a href="#">Contact Team</a>
             </div>
           </div>
         </div>
