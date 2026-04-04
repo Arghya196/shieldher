@@ -56,15 +56,15 @@ export default function ShieldScene() {
 
       for (let i = 0; i < dotCount; i += 1) {
         const angle = Math.random() * Math.PI * 2;
-        const ringDepth = 0.22 + Math.pow(Math.random(), 0.85) * 0.82;
+        const ringDepth = 0.24 + Math.pow(Math.random(), 0.9) * 0.9;
         dots.push({
           angle,
           radius: ringDepth * maxRadius * (0.88 + Math.random() * 0.28),
-          orbitSpeed: 0.00008 + Math.random() * 0.00018,
-          size: 0.65 + Math.random() * 1.35,
-          stretch: 1.1 + Math.random() * 1.2,
+          orbitSpeed: 0.00005 + Math.random() * 0.00012,
+          size: 0.32 + Math.random() * 0.8,
+          stretch: 1.35 + Math.random() * 2.1,
           seed: Math.random() * 5000,
-          hue: 132 + Math.random() * 80,
+          hue: 96 + Math.random() * 30,
         });
       }
     };
@@ -119,7 +119,7 @@ export default function ShieldScene() {
 
       const centerX = width * 0.5;
       const centerY = height * 0.5;
-      const influenceRadius = Math.min(width, height) * 0.38;
+      const influenceRadius = Math.min(width, height) * 0.42;
 
       for (let i = 0; i < dots.length; i += 1) {
         const dot = dots[i];
@@ -127,8 +127,8 @@ export default function ShieldScene() {
 
         const orbitX = Math.cos(dot.angle + t) * dot.radius * 1.08;
         const orbitY = Math.sin(dot.angle + t) * dot.radius * 0.82;
-        const wobbleX = Math.sin(now * 0.00042 + dot.seed) * 5;
-        const wobbleY = Math.cos(now * 0.00036 + dot.seed * 1.3) * 4;
+        const wobbleX = Math.sin(now * 0.00042 + dot.seed) * 3.2;
+        const wobbleY = Math.cos(now * 0.00036 + dot.seed * 1.3) * 2.6;
         const baseX = centerX + orbitX + wobbleX;
         const baseY = centerY + orbitY + wobbleY;
 
@@ -137,8 +137,8 @@ export default function ShieldScene() {
         const dist = Math.hypot(dx, dy) || 1;
         const normalized = Math.max(0, 1 - dist / influenceRadius) * pointer.active;
 
-        const pull = normalized * 32;
-        const swirl = normalized * 16;
+        const pull = normalized * 26;
+        const swirl = normalized * 12;
         const nx = dx / dist;
         const ny = dy / dist;
 
@@ -147,11 +147,12 @@ export default function ShieldScene() {
 
         const hue =
           dot.hue +
-          normalized * 64 +
-          Math.sin(now * 0.0009 + dot.seed * 0.8) * 10;
-        const saturation = 52 + normalized * 35;
-        const lightness = 36 + normalized * 28;
-        const alpha = 0.12 + normalized * 0.72;
+          normalized * 44 +
+          Math.sin(now * 0.0009 + dot.seed * 0.8) * 7;
+        const saturation = 24 + normalized * 46;
+        const lightness = 24 + normalized * 34;
+        const edgeBoost = Math.min(1, dot.radius / maxRadius);
+        const alpha = 0.03 + edgeBoost * 0.13 + normalized * 0.42;
         const rotation = dot.angle + now * dot.orbitSpeed * 0.7 + normalized * 1.1;
 
         ctx.save();

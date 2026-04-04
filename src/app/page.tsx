@@ -1,4 +1,5 @@
 import HeroVideo from "@/components/HeroVideo";
+import PrivacyFeatureScroller from "@/components/PrivacyFeatureScroller";
 import Reveal from "@/components/Reveal";
 import ShieldSceneWrapper from "@/components/ShieldSceneWrapper";
 import Link from "next/link";
@@ -356,10 +357,10 @@ export default function Home() {
         </div>
       </section>
       {/* ══════════════════════════════════════
-          PRIVACY & SUPPORT SECTION — dark green animated bg
+          PRIVACY & SUPPORT SECTION — animated bg + scroll slider
           ══════════════════════════════════════ */}
       <section className="support-section" id="privacy">
-        {/* Full-section 3D animated background */}
+        {/* Full-section animated background */}
         <ShieldSceneWrapper />
 
         {/* Content on top */}
@@ -377,31 +378,7 @@ export default function Home() {
           </Reveal>
 
           <Reveal delay={100}>
-            <div className="support-grid">
-              <div className="support-glass-card">
-                <div className="support-card-icon">
-                  <span className="material-symbols-outlined">encrypted</span>
-                </div>
-                <h3>End-to-End Encrypted</h3>
-                <p>Every screenshot and conversation is encrypted with AES-256 before analysis. Nobody — not even us — can see your raw data.</p>
-              </div>
-
-              <div className="support-glass-card">
-                <div className="support-card-icon">
-                  <span className="material-symbols-outlined">visibility_off</span>
-                </div>
-                <h3>Ghost Mode</h3>
-                <p>Activate Ghost Mode and leave absolutely zero trace on your device. Your safety is your secret.</p>
-              </div>
-
-              <div className="support-glass-card">
-                <div className="support-card-icon">
-                  <span className="material-symbols-outlined">shield</span>
-                </div>
-                <h3>24/7 AI Monitoring</h3>
-                <p>Our protection network runs continuously, analyzing threats in real-time so you&apos;re never alone.</p>
-              </div>
-            </div>
+            <PrivacyFeatureScroller />
           </Reveal>
         </div>
       </section>

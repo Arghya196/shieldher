@@ -9,11 +9,11 @@ const ShieldScene = dynamic(() => import("./ShieldScene"), {
       style={{
         width: "100%",
         height: "480px",
-        background: "linear-gradient(135deg, #0d1b2e, #0f2040)",
+        background: "linear-gradient(170deg, #f2f7f1, #e7efe4)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        color: "rgba(162,203,239,0.35)",
+        color: "rgba(41, 73, 50, 0.35)",
         fontSize: "0.8rem",
         fontFamily: "sans-serif",
         letterSpacing: "0.1em",
