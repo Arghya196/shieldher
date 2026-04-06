@@ -15,6 +15,7 @@ import {
   Info,
   Lightbulb,
   Scale,
+  Clock3,
 } from 'lucide-react';
 import { type AnalysisResult, type RiskLevel, type Upload as UploadType } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
@@ -37,6 +38,29 @@ type StatusMeta = {
   toneClass: string;
 };
 
+type CommunicationThread = {
+  id: string;
+  lawyer_name: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type CommunicationMessage = {
+  thread_id: string;
+  sender_role: 'user' | 'lawyer';
+  created_at: string;
+};
+
+type CaseNotification = {
+  id: string;
+  threadId: string;
+  lawyerName: string;
+  caseFile: string;
+  reference: string;
+  status: 'accepted' | 'pending';
+  timestamp: string;
+};
+
 function parseRole(value: unknown): UserRole | null {
   if (value === 'lawyer' || value === 'user') return value;
   return null;
@@ -48,6 +72,16 @@ function shortDate(dateStr: string): string {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
+  });
+}
+
+function shortDateTime(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
   });
 }
 
@@ -90,6 +124,7 @@ export default function DashboardPage() {
   const [userName, setUserName] = useState('');
   const [uploads, setUploads] = useState<UploadType[]>([]);
   const [analyses, setAnalyses] = useState<AnalysisResult[]>([]);
+  const [caseNotifications, setCaseNotifications] = useState<CaseNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -114,7 +149,7 @@ export default function DashboardPage() {
 
       setUserName(user.user_metadata?.full_name || user.email?.split('@')[0] || 'User');
 
-      const [{ data: uploadsData }, { data: analysesData }] = await Promise.all([
+      const [{ data: uploadsData }, { data: analysesData }, { data: threadsData, error: threadsError }] = await Promise.all([
         supabase
           .from('uploads')
           .select('*')
@@ -126,10 +161,66 @@ export default function DashboardPage() {
           .select('*')
           .order('created_at', { ascending: false })
           .limit(60),
+        supabase
+          .from('communication_threads')
+          .select('id, lawyer_name, created_at, updated_at')
+          .eq('user_id', user.id)
+          .order('updated_at', { ascending: false })
+          .limit(24),
       ]);
 
       if (uploadsData) setUploads(uploadsData);
       if (analysesData) setAnalyses(analysesData);
+
+      const threads = (threadsData as CommunicationThread[] | null) ?? [];
+      const uploadsForRefs = (uploadsData ?? []).slice();
+      const nextNotifications: CaseNotification[] = [];
+
+      if (threadsError) {
+        console.error('Could not load communication threads for case notifications:', threadsError.message);
+      }
+
+      if (threads.length > 0) {
+        const threadIds = threads.map((thread) => thread.id);
+        const { data: messagesData, error: messagesError } = await supabase
+          .from('communication_messages')
+          .select('thread_id, sender_role, created_at')
+          .in('thread_id', threadIds)
+          .order('created_at', { ascending: false })
+          .limit(400);
+
+        if (messagesError) {
+          console.error('Could not load communication messages for case notifications:', messagesError.message);
+        }
+
+        const latestLawyerReplyByThread = new Map<string, string>();
+        ((messagesData as CommunicationMessage[] | null) ?? []).forEach((message) => {
+          if (message.sender_role !== 'lawyer') return;
+          if (!latestLawyerReplyByThread.has(message.thread_id)) {
+            latestLawyerReplyByThread.set(message.thread_id, message.created_at);
+          }
+        });
+
+        threads.forEach((thread, index) => {
+          const lawyerReplyAt = latestLawyerReplyByThread.get(thread.id) ?? '';
+          const uploadRef = uploadsForRefs[index] ?? uploadsForRefs[0];
+          const fallbackFile = uploadRef?.file_name?.trim() || 'Case file';
+          const fallbackReference = (uploadRef?.id || thread.id).slice(0, 8).toUpperCase();
+
+          nextNotifications.push({
+            id: thread.id,
+            threadId: thread.id,
+            lawyerName: thread.lawyer_name || 'your lawyer',
+            caseFile: fallbackFile,
+            reference: fallbackReference,
+            status: lawyerReplyAt ? 'accepted' : 'pending',
+            timestamp: lawyerReplyAt || thread.updated_at || thread.created_at,
+          });
+        });
+      }
+
+      nextNotifications.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      setCaseNotifications(nextNotifications.slice(0, 5));
 
       setLoading(false);
     }
@@ -142,6 +233,11 @@ export default function DashboardPage() {
   const analyzedPercent = totalUploads > 0 ? (analyzedCount / totalUploads) * 100 : 0;
   const flaggedCount = uploads.filter((u) => u.status === 'flagged').length;
   const safeCount = analyses.filter((a) => a.risk_level === 'safe' || a.risk_level === 'low').length;
+  const riskyCount = analyses.filter((a) => a.risk_level !== 'safe' && a.risk_level !== 'low').length;
+  const totalAnalyzedResults = analyses.length;
+  const safeRatio = totalAnalyzedResults > 0 ? (safeCount / totalAnalyzedResults) * 100 : 0;
+  const riskyRatio = totalAnalyzedResults > 0 ? (riskyCount / totalAnalyzedResults) * 100 : 0;
+  const analyzedCoverage = totalUploads > 0 ? (analyzedCount / totalUploads) * 100 : 0;
 
   const monthSeries = useMemo<MonthPoint[]>(() => {
     const months: MonthPoint[] = [];
@@ -223,7 +319,7 @@ export default function DashboardPage() {
   const gaugeCircumference = 2 * Math.PI * gaugeRadius;
   const gaugeOffset = gaugeCircumference * (1 - healthScore / 100);
 
-  const regionsProtected = Math.max(1, Math.ceil((safeCount + analyzedCount) / 3));
+  const gaugeStrokeColor = healthScore >= 72 ? '#466550' : healthScore >= 45 ? '#92713b' : '#a64542';
 
   const visibleAnalyses = analyses.slice(0, 5);
   const expandedAnalysis = analyses.find((analysis) => analysis.id === expandedId) ?? null;
@@ -335,6 +431,59 @@ export default function DashboardPage() {
         </article>
       </section>
 
+      <section className={styles.casePanel}>
+        <div className={styles.caseHeader}>
+          <div>
+            <h2 className={styles.caseTitle}>Case Notifications</h2>
+            <p className={styles.caseHint}>Live updates when lawyers respond to your case requests.</p>
+          </div>
+
+          <Link href="/dashboard/communication" className={styles.caseHeaderAction}>
+            Open Inbox
+          </Link>
+        </div>
+
+        {caseNotifications.length > 0 ? (
+          <div className={styles.caseList}>
+            {caseNotifications.map((notification) => (
+              <article
+                key={notification.id}
+                className={`${styles.caseRow} ${
+                  notification.status === 'accepted' ? styles.caseRowAccepted : styles.caseRowPending
+                }`}
+              >
+                <div
+                  className={`${styles.caseStatusIcon} ${
+                    notification.status === 'accepted' ? styles.caseStatusAccepted : styles.caseStatusPending
+                  }`}
+                >
+                  {notification.status === 'accepted' ? <ShieldCheck size={15} /> : <Clock3 size={15} />}
+                </div>
+
+                <div className={styles.caseRowBody}>
+                  <p className={styles.caseRowTitle}>
+                    {notification.status === 'accepted'
+                      ? `Your case has been accepted by ${notification.lawyerName}`
+                      : `Case request sent to ${notification.lawyerName}`}
+                  </p>
+                  <p className={styles.caseRowMeta}>
+                    {notification.caseFile} • Ref {notification.reference} • {shortDateTime(notification.timestamp)}
+                  </p>
+                </div>
+
+                <Link href={`/dashboard/communication?thread=${notification.threadId}`} className={styles.caseActionBtn}>
+                  {notification.status === 'accepted' ? 'View Case' : 'Open Chat'}
+                </Link>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className={styles.caseEmpty}>
+            No case updates yet. Select a lawyer to start receiving live case notifications.
+          </div>
+        )}
+      </section>
+
       <section className={styles.analyticsGrid}>
         <article className={styles.barPanel}>
           <div className={styles.panelHeader}>
@@ -380,6 +529,7 @@ export default function DashboardPage() {
                 style={{
                   strokeDasharray: gaugeCircumference,
                   strokeDashoffset: gaugeOffset,
+                  stroke: gaugeStrokeColor,
                 }}
               />
             </svg>
@@ -391,14 +541,52 @@ export default function DashboardPage() {
           </div>
 
           <p className={styles.gaugeSummary}>
-            Protocols integrated in <strong>{regionsProtected} regions</strong>
+            Based on <strong>{totalAnalyzedResults.toLocaleString()} analyzed results</strong>
           </p>
 
-          <div className={styles.gaugeProgressTrack}>
-            <div className={styles.gaugeProgressFill} style={{ width: `${healthScore}%` }} />
-          </div>
+          <div className={styles.safetyOverviewList}>
+            <div className={styles.safetyOverviewItem}>
+              <div className={styles.safetyOverviewTop}>
+                <p className={styles.safetyOverviewName}>Safe Results</p>
+                <p className={styles.safetyOverviewValue}>{safeCount.toLocaleString()}</p>
+              </div>
+              <p className={styles.safetyOverviewSub}>All clear</p>
+              <div className={styles.safetyOverviewTrack}>
+                <div
+                  className={`${styles.safetyOverviewFill} ${styles.safetyFillSafe}`}
+                  style={{ width: `${safeRatio}%` }}
+                />
+              </div>
+            </div>
 
-          <p className={styles.gaugeCaption}>Quarterly progress</p>
+            <div className={styles.safetyOverviewItem}>
+              <div className={styles.safetyOverviewTop}>
+                <p className={styles.safetyOverviewName}>Flagged</p>
+                <p className={styles.safetyOverviewValue}>{riskyCount.toLocaleString()}</p>
+              </div>
+              <p className={styles.safetyOverviewSub}>Needs review</p>
+              <div className={styles.safetyOverviewTrack}>
+                <div
+                  className={`${styles.safetyOverviewFill} ${styles.safetyFillDanger}`}
+                  style={{ width: `${riskyRatio}%` }}
+                />
+              </div>
+            </div>
+
+            <div className={styles.safetyOverviewItem}>
+              <div className={styles.safetyOverviewTop}>
+                <p className={styles.safetyOverviewName}>Total Analyzed</p>
+                <p className={styles.safetyOverviewValue}>{analyzedCount.toLocaleString()}</p>
+              </div>
+              <p className={styles.safetyOverviewSub}>{totalUploads.toLocaleString()} uploads</p>
+              <div className={styles.safetyOverviewTrack}>
+                <div
+                  className={`${styles.safetyOverviewFill} ${styles.safetyFillTotal}`}
+                  style={{ width: `${analyzedCoverage}%` }}
+                />
+              </div>
+            </div>
+          </div>
         </article>
       </section>
 
