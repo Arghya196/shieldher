@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, X, CheckCircle, Loader, FileAudio } from "lucide-react";
+import { Upload, X, CheckCircle, Loader, FileAudio, FileVideo } from "lucide-react";
 import styles from "./UploadZone.module.css";
 
 interface UploadedFile {
@@ -40,8 +40,9 @@ export default function UploadZone({
     accept: {
       "image/*": [".png", ".jpg", ".jpeg", ".webp"],
       "audio/*": [".mp3", ".wav", ".m4a", ".aac", ".ogg"],
+      "video/*": [".mp4", ".webm", ".mov", ".avi", ".mkv", ".3gp"],
     },
-    maxSize: 10 * 1024 * 1024, // 10MB
+    maxSize: 50 * 1024 * 1024, // 50MB (larger for video)
     multiple: true,
   });
 
@@ -74,10 +75,10 @@ export default function UploadZone({
                 ? "Drop your evidence here"
                 : isUploading
                   ? "Uploading..."
-                  : "Drag & drop chat screenshots or recordings"}
+                  : "Drag & drop screenshots, recordings, or videos"}
             </p>
             <p className={styles.dropHint}>
-              or click to browse • Images/Audio up to 10MB
+              or click to browse • Images/Audio/Video up to 50MB
             </p>
           </div>
         </div>
@@ -93,6 +94,10 @@ export default function UploadZone({
                 {f.file.type.startsWith('audio/') ? (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', background: 'rgba(99, 91, 255, 0.06)' }}>
                     <FileAudio size={42} style={{ color: 'var(--accent-primary)' }} />
+                  </div>
+                ) : f.file.type.startsWith('video/') ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', background: 'rgba(139, 92, 246, 0.08)' }}>
+                    <FileVideo size={42} style={{ color: '#8b5cf6' }} />
                   </div>
                 ) : (
                   <img

@@ -715,6 +715,74 @@
     line-height: 1.6;
 }
 
+.authenticityInlineCard {
+    border-radius: 12px;
+    border: 1px solid rgba(99, 91, 255, 0.22);
+    background: rgba(99, 91, 255, 0.08);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.authenticityInlineTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.authenticityInlineLabel {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--accent-primary);
+    border: 1px solid rgba(99, 91, 255, 0.26);
+    background: rgba(99, 91, 255, 0.12);
+    border-radius: var(--radius-full);
+    padding: 4px 10px;
+}
+
+.authenticityInlineScore {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.authenticityInlineItems {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.authenticityInlineItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-radius: 10px;
+    border: 1px solid rgba(99, 91, 255, 0.16);
+    background: rgba(255, 255, 255, 0.62);
+    padding: 7px 9px;
+}
+
+.authenticityInlineFile {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.authenticityInlineItemLabel {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-secondary);
+    letter-spacing: 0.02em;
+}
+
 /* Insight bento */
 .insightGrid {
     display: grid;
@@ -1076,8 +1144,26 @@
 [data-theme="dark"] .pulseItemSub,
 [data-theme="dark"] .heroSubtitle,
 [data-theme="dark"] .analysisSummary,
-[data-theme="dark"] .empty p {
+[data-theme="dark"] .empty p,
+[data-theme="dark"] .authenticityInlineScore,
+[data-theme="dark"] .authenticityInlineItemLabel {
     color: #94a3b8;
+}
+
+[data-theme="dark"] .authenticityInlineCard,
+[data-theme="dark"] .authenticityInlineItem {
+    border-color: rgba(129, 140, 248, 0.28);
+    background: rgba(129, 140, 248, 0.12);
+}
+
+[data-theme="dark"] .authenticityInlineLabel {
+    color: #c7d2fe;
+    border-color: rgba(129, 140, 248, 0.4);
+    background: rgba(129, 140, 248, 0.18);
+}
+
+[data-theme="dark"] .authenticityInlineFile {
+    color: #e2e8f0;
 }
 
 [data-theme="dark"] .arrowBtn {

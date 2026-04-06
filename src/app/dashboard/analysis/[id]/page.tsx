@@ -21,6 +21,10 @@ import {
   FileDown,
   Loader,
   CheckCircle,
+  ShieldAlert,
+  Image as ImageIcon,
+  Mic,
+  Video,
 } from "lucide-react";
 import styles from "./page.module.css";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -121,6 +125,7 @@ export default function AnalysisDetailPage() {
   }
 
   const details = analysis.details || {};
+  const authenticity = details.media_authenticity;
   const fileUrls = (upload.file_url || "")
     .split(",")
     .map((url) => url.trim())
@@ -136,6 +141,7 @@ export default function AnalysisDetailPage() {
     const lower = pathname.toLowerCase();
     if (/\.(png|jpe?g|webp|gif)$/i.test(lower)) return "image";
     if (/\.(mp3|wav|m4a|ogg)$/i.test(lower)) return "audio";
+    if (/\.(mp4|webm|mov|avi|mkv|3gp)$/i.test(lower)) return "video";
     return "other";
   };
 
@@ -146,7 +152,9 @@ export default function AnalysisDetailPage() {
         ? `${t.analysisDetailPage.screenshot} ${index + 1}`
         : kind === "audio"
           ? `${t.analysisDetailPage.audioRecording} ${index + 1}`
-          : `${t.analysisDetailPage.file} ${index + 1}`;
+          : kind === "video"
+            ? `Video ${index + 1}`
+            : `${t.analysisDetailPage.file} ${index + 1}`;
     return { url, kind, label };
   });
 
@@ -241,6 +249,11 @@ export default function AnalysisDetailPage() {
                   <source src={item.url} />
                   {t.analysisDetailPage.audioNotSupported}
                 </audio>
+              ) : item.kind === "video" ? (
+                <video controls className={styles.mediaImage} style={{ maxHeight: '400px', objectFit: 'contain' }}>
+                  <source src={item.url} />
+                  Your browser does not support the video tag.
+                </video>
               ) : (
                 <a
                   href={item.url}
@@ -278,6 +291,44 @@ export default function AnalysisDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Media Authenticity */}
+      {authenticity && authenticity.supported_count > 0 && (
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>
+            {authenticity.status === "ai_generated" ? <ShieldAlert size={18} /> : <ShieldCheck size={18} />}
+            Media Authenticity Check
+          </h2>
+          <div className={`${styles.detailCard} ${styles.authenticityCard}`}>
+            <div className={styles.authenticityTopRow}>
+              <span className={styles.authenticityLabel}>{authenticity.label}</span>
+              {typeof authenticity.ai_probability === "number" && (
+                <span className={styles.authenticityScore}>AI likelihood {authenticity.ai_probability}%</span>
+              )}
+            </div>
+            <p>{getFriendlyAuthenticityMessage(authenticity.status)}</p>
+
+            {authenticity.items?.length > 0 && (
+              <div className={styles.authenticityItems}>
+                {authenticity.items.map((item, index) => (
+                  <div key={`${item.file_name}-${index}`} className={styles.authenticityItem}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                      <span className={styles.authenticityFileName}>
+                        {item.media_type === "audio" ? <Mic size={13} /> : item.media_type === "video" ? <Video size={13} /> : <ImageIcon size={13} />}
+                        {item.file_name}
+                      </span>
+                      <span className={styles.authenticityItemStatus}>{item.label}</span>
+                    </div>
+                    <p className={styles.authenticityItemSummary} style={{ margin: "4px 0 0", fontSize: "0.85rem", color: "var(--text-muted)", width: '100%' }}>
+                      {getFriendlyAuthenticityMessage(item.status)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Flags */}
       {analysis.flags && analysis.flags.length > 0 && (

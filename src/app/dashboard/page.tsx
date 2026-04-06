@@ -15,6 +15,10 @@ import {
   FileSearch,
   Scale,
   Lightbulb,
+  ShieldAlert,
+  Mic,
+  Image as ImageIcon,
+  Video,
 } from 'lucide-react';
 import { type AnalysisResult, type Upload as UploadType } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
@@ -228,6 +232,7 @@ export default function DashboardPage() {
                 ? `${analysis.details.confidence_score}%`
                 : '—';
               const hasFlags = analysis.flags && analysis.flags.length > 0;
+              const authenticity = analysis.details?.media_authenticity;
               const isWarning = analysis.risk_level === 'medium' || analysis.risk_level === 'high' || analysis.risk_level === 'critical';
 
               return (
@@ -337,6 +342,37 @@ export default function DashboardPage() {
                           <Scale size={14} /> {t.dashboard.legalPerspective}
                         </div>
                         <p className={styles.detailsText}>{analysis.details.legal_analysis.summary}</p>
+                      </div>
+                    )}
+
+                    {authenticity && authenticity.supported_count > 0 && (
+                      <div className={styles.detailsSection}>
+                        <div className={styles.detailsSectionTitle}>
+                          {authenticity.status === 'ai_generated' ? <ShieldAlert size={14} /> : <ShieldCheck size={14} />}
+                          Media Authenticity
+                        </div>
+                        <div className={styles.authenticityInlineCard}>
+                          <div className={styles.authenticityInlineTop}>
+                            <span className={styles.authenticityInlineLabel}>{authenticity.label}</span>
+                            {typeof authenticity.ai_probability === 'number' && (
+                              <span className={styles.authenticityInlineScore}>AI likelihood {authenticity.ai_probability}%</span>
+                            )}
+                          </div>
+                          <p className={styles.detailsText}>{getFriendlyAuthenticityMessage(authenticity.status)}</p>
+                          {authenticity.items?.length > 0 && (
+                            <div className={styles.authenticityInlineItems}>
+                              {authenticity.items.map((item, idx) => (
+                                <div key={`${item.file_name}-${idx}`} className={styles.authenticityInlineItem}>
+                                  <span className={styles.authenticityInlineFile}>
+                                    {item.media_type === 'audio' ? <Mic size={13} /> : item.media_type === 'video' ? <Video size={13} /> : <ImageIcon size={13} />}
+                                    {item.file_name}
+                                  </span>
+                                  <span className={styles.authenticityInlineItemLabel}>{item.label}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                     

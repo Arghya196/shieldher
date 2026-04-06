@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowLeft, Sparkles, Loader, Info, AlertTriangle, Lightbulb, Scale } from 'lucide-react';
+import { ArrowLeft, Sparkles, Loader, Info, AlertTriangle, Lightbulb, Scale, ShieldCheck, ShieldAlert, Mic, Image as ImageIcon, Video } from 'lucide-react';
 import Link from 'next/link';
 import UploadZone from '@/components/UploadZone';
 import { createClient } from '@/lib/supabase/client';
 import styles from './page.module.css';
 import { type AnalysisResult } from '@/lib/types';
+import { getFriendlyAuthenticityMessage } from '@/lib/mediaAuthenticity';
 
 export default function UploadPage() {
   const [files, setFiles] = useState<File[]>([]);
@@ -35,9 +36,18 @@ export default function UploadPage() {
 
       const fileUrls: string[] = [];
 
+      const getExtension = (file: File) => {
+        const mimeExt = file.type.split('/')[1]?.toLowerCase();
+        if (mimeExt) return mimeExt === 'jpeg' ? 'jpg' : mimeExt;
+
+        const fromName = file.name.split('.').pop()?.toLowerCase();
+        if (fromName && /^[a-z0-9]+$/.test(fromName)) return fromName;
+        return 'bin';
+      };
+
       for (const file of files) {
-        // Upload file to Supabase Storage
-        const fileName = `${user.id}/${Date.now()}-${file.name}`;
+        // Always use a UUID-based storage key to avoid invalid filename characters.
+        const fileName = `${user.id}/${Date.now()}-${crypto.randomUUID()}.${getExtension(file)}`;
         const { error: storageError } = await supabase.storage
           .from('screenshots')
           .upload(fileName, file);
@@ -95,6 +105,7 @@ export default function UploadPage() {
     analysisResult?.details?.legal_analysis?.potential_violations
       ?.map((item) => item.trim())
       .filter((item) => item.length > 0) ?? [];
+  const authenticity = analysisResult?.details?.media_authenticity;
 
   return (
     <div className={styles.page}>
@@ -106,7 +117,7 @@ export default function UploadPage() {
       <div className={styles.header}>
         <h1 className={styles.title}>Upload Evidence</h1>
         <p className={styles.subtitle}>
-          Upload chat screenshots or voice recordings for AI-powered analysis. We&apos;ll detect harmful
+          Upload chat screenshots, voice recordings, or videos for AI-powered analysis. We&apos;ll detect harmful
           patterns, manipulation, and potential threats.
         </p>
       </div>
@@ -181,6 +192,63 @@ export default function UploadPage() {
               </div>
               
               <p className={styles.summary}>{analysisResult.summary}</p>
+
+              {authenticity && authenticity.supported_count > 0 && (
+                <div className={`${styles.authenticityPanel} ${styles[`authenticity_${authenticity.status}`] || styles.authenticity_inconclusive}`}>
+                  <div className={styles.authenticityHeader}>
+                    <div className={styles.authenticityIcon}>
+                      {authenticity.status === 'ai_generated' ? <ShieldAlert size={20} /> : <ShieldCheck size={20} />}
+                    </div>
+                    <div className={styles.authenticityHeading}>
+                      <div className={styles.authenticityEyebrow}>
+                        <Info size={14} />
+                        Media Authenticity Check
+                      </div>
+                      <h3>{authenticity.label}</h3>
+                      <p>{getFriendlyAuthenticityMessage(authenticity.status)}</p>
+                    </div>
+                    {typeof authenticity.ai_probability === 'number' && (
+                      <div className={styles.authenticityScore}>
+                        <span>AI likelihood</span>
+                        <strong>{authenticity.ai_probability}%</strong>
+                      </div>
+                    )}
+                  </div>
+
+                  {typeof authenticity.ai_probability === 'number' && (
+                    <div className={styles.authenticityMeter}>
+                      <div
+                        className={styles.authenticityMeterFill}
+                        style={{ width: `${authenticity.ai_probability}%` }}
+                      />
+                    </div>
+                  )}
+
+                  <div className={styles.authenticityMeta}>
+                    <span>{authenticity.supported_count} supported file(s)</span>
+                    <span>{authenticity.analyzed_count} uploaded file(s)</span>
+                  </div>
+
+                  {authenticity.items.length > 0 && (
+                    <div className={styles.authenticityItems}>
+                      {authenticity.items.map((item, index) => (
+                        <div key={`${item.file_name}-${index}`} className={styles.authenticityItem}>
+                          <div className={styles.authenticityItemTop}>
+                            <div className={styles.authenticityItemTitle}>
+                              {item.media_type === 'audio' ? <Mic size={15} /> : item.media_type === 'video' ? <Video size={15} /> : <ImageIcon size={15} />}
+                              <span>{item.file_name}</span>
+                            </div>
+                            <span className={`${styles.authenticityItemBadge} ${styles[`authenticityBadge_${item.status}`] || styles.authenticityBadge_inconclusive}`}>
+                              {item.label}
+                            </span>
+                          </div>
+                          <p className={styles.authenticityItemSummary}>{getFriendlyAuthenticityMessage(item.status)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {analysisResult.flags && analysisResult.flags.length > 0 && (
                 <div className={styles.resultSection}>
@@ -277,9 +345,10 @@ export default function UploadPage() {
             <h3>Tips for best results</h3>
           </div>
           <ul className={styles.tipsList}>
-            <li>Take clear, full-screen screenshots or provide clear audio recordings</li>
+            <li>Take clear, full-screen screenshots, provide clear audio recordings, or upload video evidence</li>
             <li>Include the full conversation thread when possible</li>
             <li>Make sure text is readable and not blurry</li>
+            <li>For videos, ensure good lighting and audible dialogue</li>
             <li>You can upload multiple files at once</li>
           </ul>
         </div>

@@ -31,6 +31,7 @@ export default function Sidebar() {
       delete document.body.dataset.sidebarCollapsed;
     };
   }, [collapsed]);
+
   const { theme, toggleTheme } = useTheme();
   const { t } = useLanguage();
   const [initial, setInitial] = useState("U");

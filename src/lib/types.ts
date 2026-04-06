@@ -26,6 +26,36 @@ export interface AnalysisFlag {
   evidence: string;
 }
 
+export type MediaAuthenticityStatus =
+  | 'ai_generated'
+  | 'likely_human'
+  | 'inconclusive'
+  | 'unsupported'
+  | 'unavailable';
+
+export interface MediaAuthenticityItem {
+  file_name: string;
+  media_type: 'image' | 'audio' | 'video' | 'other';
+  provider: string;
+  status: MediaAuthenticityStatus;
+  label: string;
+  summary: string;
+  ai_probability?: number;
+  confidence?: number;
+}
+
+export interface MediaAuthenticityResult {
+  provider: string;
+  status: MediaAuthenticityStatus;
+  label: string;
+  summary: string;
+  confidence?: number;
+  ai_probability?: number;
+  analyzed_count: number;
+  supported_count: number;
+  items: MediaAuthenticityItem[];
+}
+
 export interface AnalysisResult {
   id: string;
   upload_id: string;
@@ -38,6 +68,7 @@ export interface AnalysisResult {
     threat_indicators?: string[];
     recommendations?: string[];
     confidence_score?: number;
+    media_authenticity?: MediaAuthenticityResult;
     legal_analysis?: {
       summary: string;
       potential_violations: string[];
