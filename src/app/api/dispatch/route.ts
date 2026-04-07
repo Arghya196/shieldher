@@ -32,11 +32,24 @@ const FORCED_SUBCATEGORY_LABEL = "Sexually Explicit Act";
 
 // ─── Suspect ID type → dropdown index mapping ───
 const SUSPECT_ID_TYPE_MAP: Record<string, number> = {
-  'mobile': 1,
-  'email': 2,
-  'social_media_id': 3,
-  'username': 3,
-  'none': 0,
+  'mobile_number': 1, 'email_address': 2, 'social_media_id': 3,
+  'pan_card': 4, 'international_number': 5, 'landline_number': 6,
+  'whatsapp_call': 7, 'aadhaar_card': 8, 'passport': 9,
+  'bank_account': 10, 'upi_id': 11,
+  // Legacy values
+  'mobile': 1, 'email': 2, 'username': 3, 'none': 0,
+};
+
+// FIX 1/2: Human-readable labels for portal dropdown fuzzy-matching
+const SUSPECT_ID_TYPE_LABELS: Record<string, string> = {
+  'mobile_number': 'Mobile Number', 'email_address': 'Email Address',
+  'social_media_id': 'Social Media ID', 'pan_card': 'PAN Card',
+  'international_number': 'International Number', 'landline_number': 'Landline Number',
+  'whatsapp_call': 'WhatsApp Call', 'aadhaar_card': 'Aadhaar Card',
+  'passport': 'Passport Number', 'bank_account': 'Bank Account Number',
+  'upi_id': 'UPI ID',
+  'mobile': 'Mobile Number', 'email': 'Email Address',
+  'username': 'Username', 'none': 'Not Available',
 };
 
 interface DispatchRequestBody {
@@ -179,6 +192,8 @@ export async function POST(request: NextRequest) {
     const suspectIdType = body.user_suspect_id_type || suspectInfo?.identifier_type || 'none';
     const suspectIdValue = body.user_suspect_contact || suspectInfo?.identifier_value || '';
     const suspectIdTypeIndex = SUSPECT_ID_TYPE_MAP[suspectIdType] || 0;
+    // FIX 1/2: Pass human-readable label for portal matching
+    const suspectIdTypeLabel = SUSPECT_ID_TYPE_LABELS[suspectIdType] || suspectIdType || 'Not Available';
 
     let suspectDescription = suspectInfo?.description || 'Perpetrator operates through anonymous online accounts.';
     if (rpaData?.platform_url_or_id) {
@@ -209,6 +224,7 @@ export async function POST(request: NextRequest) {
       evidence_paths: evidencePaths, // New array of paths
       suspect_name: suspectName,
       suspect_id_type_index: suspectIdTypeIndex,
+      suspect_id_type_label: suspectIdTypeLabel,  // FIX 1/2: label for portal matching
       suspect_id_value: suspectIdValue,
       suspect_description: suspectDescription,
       risk_level: analysis.risk_level,

@@ -77,10 +77,17 @@ const INDIAN_STATES = [
 
 const SUSPECT_ID_TYPES = [
   { value: 'none', label: 'Not Available' },
-  { value: 'mobile', label: 'Mobile Number' },
-  { value: 'email', label: 'Email Address' },
-  { value: 'social_media_id', label: 'Social Media ID / Handle' },
-  { value: 'username', label: 'Username' },
+  { value: 'mobile_number', label: 'Mobile Number' },
+  { value: 'email_address', label: 'Email Address' },
+  { value: 'social_media_id', label: 'Social Media ID' },
+  { value: 'pan_card', label: 'PAN Card' },
+  { value: 'international_number', label: 'International Number' },
+  { value: 'landline_number', label: 'Landline Number' },
+  { value: 'whatsapp_call', label: 'WhatsApp Call' },
+  { value: 'aadhaar_card', label: 'Aadhaar Card' },
+  { value: 'passport', label: 'Passport Number' },
+  { value: 'bank_account', label: 'Bank Account Number' },
+  { value: 'upi_id', label: 'UPI ID' },
 ];
 
 export default function AnalysisDetailPage() {
@@ -1057,15 +1064,16 @@ export default function AnalysisDetailPage() {
               </select>
             </div>
 
+            {/* FIX 4: Renamed field — value passed as suspect_id_value in API payload */}
             <div className={styles.modalFieldGroup}>
               <label className={styles.modalLabel}>
                 <Phone size={14} />
-                Suspect Contact / ID
+                Suspect Mobile No. / Social Media ID / PAN No.
               </label>
               <input
                 type="text"
                 className={styles.modalInput}
-                placeholder="Phone number, email, or social media handle"
+                placeholder="Enter the value matching your selected ID type"
                 value={dispatchForm.suspectContact}
                 onChange={(e) => setDispatchForm(prev => ({ ...prev, suspectContact: e.target.value }))}
               />
