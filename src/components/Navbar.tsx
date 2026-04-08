@@ -79,7 +79,6 @@ export default function Navbar() {
             className={styles.link}
             onClick={(e) => {
               setMenuOpen(false);
-              window.dispatchEvent(new Event('features-nav-click'));
               if (pathname === '/') {
                 e.preventDefault();
                 document.getElementById('features')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
