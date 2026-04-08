@@ -87,6 +87,66 @@ function getFileNameFromUrl(fileUrl: string, fallback: string) {
   }
 }
 
+function getStoragePathFromFileUrl(fileUrl: string, bucket: string) {
+  try {
+    const pathname = new URL(fileUrl).pathname;
+    const marker = `/object/public/${bucket}/`;
+    const markerIndex = pathname.indexOf(marker);
+    if (markerIndex === -1) return null;
+    const rawPath = pathname.slice(markerIndex + marker.length);
+    return decodeURIComponent(rawPath);
+  } catch {
+    return null;
+  }
+}
+
+async function fetchUploadBytes(
+  fileRef: string,
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  bucket = 'screenshots',
+) {
+  const isHttpUrl = /^https?:\/\//i.test(fileRef);
+  let resolvedUrl = fileRef;
+
+  // First attempt: direct URL fetch (works for public buckets)
+  if (isHttpUrl) {
+    const directResp = await fetch(fileRef);
+    if (directResp.ok) {
+      return {
+        arrayBuffer: await directResp.arrayBuffer(),
+        contentType: directResp.headers.get('content-type') || '',
+        resolvedUrl,
+      };
+    }
+  }
+
+  // Fallback: generate signed URL (works for private buckets)
+  const storagePath = isHttpUrl ? getStoragePathFromFileUrl(fileRef, bucket) : fileRef;
+  if (!storagePath) {
+    throw new Error('Failed to resolve storage path for uploaded file');
+  }
+
+  const { data: signedData, error: signError } = await supabase.storage
+    .from(bucket)
+    .createSignedUrl(storagePath, 60 * 5);
+
+  if (signError || !signedData?.signedUrl) {
+    throw new Error('Failed to create signed URL for uploaded file');
+  }
+
+  resolvedUrl = signedData.signedUrl;
+  const signedResp = await fetch(resolvedUrl);
+  if (!signedResp.ok) {
+    throw new Error('Failed to fetch uploaded file');
+  }
+
+  return {
+    arrayBuffer: await signedResp.arrayBuffer(),
+    contentType: signedResp.headers.get('content-type') || '',
+    resolvedUrl,
+  };
+}
+
 function detectMimeType(fileUrl: string, headerMimeType: string) {
   if (headerMimeType && !headerMimeType.startsWith('application/')) {
     return headerMimeType;
@@ -372,22 +432,21 @@ export async function POST(request: NextRequest) {
 
     let result;
     try {
-      const fileUrls = upload.file_url.split(',');
+      const fileUrls = upload.file_url
+        .split(',')
+        .map((url: string) => url.trim())
+        .filter((url: string) => url.length > 0);
       const fetchedFiles: FetchedUploadFile[] = await Promise.all(
         fileUrls.map(async (fileUrl: string, index: number) => {
-          const fileResp = await fetch(fileUrl);
-          if (!fileResp.ok) {
-            throw new Error('Failed to fetch file from storage');
-          }
-
-          const arrayBuffer = await fileResp.arrayBuffer();
+          const fetched = await fetchUploadBytes(fileUrl, supabase);
+          const arrayBuffer = fetched.arrayBuffer;
           const base64Data = Buffer.from(arrayBuffer).toString('base64');
           const fileName = getFileNameFromUrl(fileUrl, `upload-${index + 1}`);
-          const mimeType = detectMimeType(fileUrl, fileResp.headers.get('content-type') || '');
+          const mimeType = detectMimeType(fileUrl, fetched.contentType);
           const kind = getMediaKind(mimeType, fileName);
 
           return {
-            fileUrl,
+            fileUrl: fetched.resolvedUrl,
             fileName,
             mimeType,
             kind,
