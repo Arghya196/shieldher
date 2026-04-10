@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, X, CheckCircle, Loader, FileAudio, FileText } from "lucide-react";
+import { Upload, X, CheckCircle, Loader, FileAudio, FileText, FileVideo } from "lucide-react";
 import styles from "./UploadZone.module.css";
 
 interface UploadedFile {
@@ -40,8 +40,9 @@ export default function UploadZone({
     accept: {
       "image/*": [".png", ".jpg", ".jpeg", ".webp"],
       "audio/*": [".mp3", ".wav", ".m4a", ".aac", ".ogg"],
+      "video/*": [".mp4", ".mov", ".webm", ".mkv"],
     },
-    maxSize: 10 * 1024 * 1024, // 10MB
+    maxSize: 50 * 1024 * 1024, // Increased to 50MB for video support
     multiple: true,
   });
 
@@ -75,10 +76,10 @@ export default function UploadZone({
                 ? "Drop your evidence here"
                 : isUploading
                   ? "Uploading..."
-                  : "Drag & drop chat screenshots or recordings"}
+                  : "Drag & drop screenshots, recordings, or video evidence"}
             </p>
             <p className={styles.dropHint}>
-              or click to browse • Images/Audio up to 10MB
+              or click to browse • Images/Audio/Video up to 50MB
             </p>
           </div>
         </div>
@@ -92,6 +93,10 @@ export default function UploadZone({
                 {f.file.type.startsWith("audio/") ? (
                   <div className={styles.audioPreview}>
                     <FileAudio size={42} className={styles.audioIcon} />
+                  </div>
+                ) : f.file.type.startsWith("video/") ? (
+                  <div className={styles.audioPreview} style={{ background: "rgba(139, 92, 246, 0.08)" }}>
+                    <FileVideo size={42} style={{ color: "#8b5cf6" }} />
                   </div>
                 ) : (
                   <img

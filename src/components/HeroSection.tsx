@@ -5,21 +5,29 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Sparkles, ShieldCheck, Zap, Lock } from "lucide-react";
 import styles from "./HeroSection.module.css";
-import { useLanguage } from "./LanguageProvider";
+
+const scanStatuses = [
+  { label: "Manipulation cues", value: "Detected", level: "warn" },
+  { label: "Coercive language", value: "Elevated", level: "danger" },
+  { label: "Threat signals", value: "Low", level: "safe" },
+];
+
+const riskRotation = [
+  { level: "Moderate", color: "#f5a623", percent: 40 },
+  { level: "Low", color: "#00d4aa", percent: 20 },
+  { level: "High", color: "#ff4757", percent: 75 },
+];
+
+const trustBadges = [
+  { icon: ShieldCheck, text: "End-to-end encrypted" },
+  { icon: Zap, text: "Real-time analysis" },
+  { icon: Lock, text: "Ghost mode ready" },
+];
 
 export default function HeroSection() {
   const [riskIndex, setRiskIndex] = useState(0);
-  const [scanVisible] = useState(true);
+  const [scanVisible, setScanVisible] = useState(false);
   const [activeItem, setActiveItem] = useState(-1);
-  const { t } = useLanguage();
-
-  const scanStatuses = t.hero.scanStatuses;
-  const riskRotation = t.hero.riskRotation;
-  const trustBadges = [
-    { icon: ShieldCheck, text: t.hero.trustBadges[0] },
-    { icon: Zap, text: t.hero.trustBadges[1] },
-    { icon: Lock, text: t.hero.trustBadges[2] },
-  ];
 
   // Cycle through risk levels
   useEffect(() => {
@@ -27,10 +35,11 @@ export default function HeroSection() {
       setRiskIndex((prev) => (prev + 1) % riskRotation.length);
     }, 3000);
     return () => clearInterval(interval);
-  }, [riskRotation.length]);
+  }, []);
 
   // Staggered scan items reveal
   useEffect(() => {
+    setScanVisible(true);
     const interval = setInterval(() => {
       setActiveItem((prev) => {
         if (prev >= scanStatuses.length - 1) return 0;
@@ -38,7 +47,7 @@ export default function HeroSection() {
       });
     }, 2000);
     return () => clearInterval(interval);
-  }, [scanStatuses.length]);
+  }, []);
 
   const currentRisk = riskRotation[riskIndex];
 
@@ -66,16 +75,20 @@ export default function HeroSection() {
             <div className={styles.badge}>
               <span className={styles.badgeDot} />
               <Sparkles size={14} />
-              <span>{t.hero.badge}</span>
+              <span>AI-Powered Protection</span>
             </div>
 
             <h1 className={styles.title}>
-              {t.hero.titleLine1}
+              Your digital
               <br />
-              <span className={styles.titleAccent}>{t.hero.titleAccent}</span>
+              <span className={styles.titleAccent}>safety shield.</span>
             </h1>
 
-            <p className={styles.subtitle}>{t.hero.subtitle}</p>
+            <p className={styles.subtitle}>
+              Upload chat screenshots and let our AI instantly analyze
+              conversations for manipulation, threats, and harmful patterns.
+              Stay informed, stay safe.
+            </p>
 
             <div className={styles.actions}>
               <Link
@@ -83,14 +96,14 @@ export default function HeroSection() {
                 className={`${styles.heroBtn} ${styles.heroBtnPrimary}`}
               >
                 <span className={styles.btnShimmer} />
-                {t.hero.startAnalyzing}
+                Start Analyzing
                 <ArrowRight size={18} />
               </Link>
               <Link
                 href="/#how-it-works"
                 className={`${styles.heroBtn} ${styles.heroBtnSecondary}`}
               >
-                {t.hero.howItWorks}
+                How It Works
               </Link>
             </div>
 
@@ -109,16 +122,16 @@ export default function HeroSection() {
 
             <div className={styles.heroStats}>
               <div className={styles.statCard}>
-                <span className={styles.statNumber}>{t.hero.stats[0].value}</span>
-                <span className={styles.statLabel}>{t.hero.stats[0].label}</span>
+                <span className={styles.statNumber}>10K+</span>
+                <span className={styles.statLabel}>Screenshots analyzed</span>
               </div>
               <div className={styles.statCard}>
-                <span className={styles.statNumber}>{t.hero.stats[1].value}</span>
-                <span className={styles.statLabel}>{t.hero.stats[1].label}</span>
+                <span className={styles.statNumber}>98%</span>
+                <span className={styles.statLabel}>Detection accuracy</span>
               </div>
               <div className={styles.statCard}>
-                <span className={styles.statNumber}>{t.hero.stats[2].value}</span>
-                <span className={styles.statLabel}>{t.hero.stats[2].label}</span>
+                <span className={styles.statNumber}>&lt;30s</span>
+                <span className={styles.statLabel}>Avg analysis time</span>
               </div>
             </div>
           </div>
@@ -138,9 +151,9 @@ export default function HeroSection() {
                     className={styles.chipLogo}
                   />
                   <span className={styles.liveDot} />
-                  {t.hero.panel.liveScan}
+                  Live Scan
                 </div>
-                <span className={styles.panelMeta}>{t.hero.panel.encryptedPrivate}</span>
+                <span className={styles.panelMeta}>Encrypted • Private</span>
               </div>
 
               <div className={styles.panelContent}>
@@ -154,7 +167,7 @@ export default function HeroSection() {
                     <div className={styles.panelScoreRingInner} />
                   </div>
                   <div>
-                    <div className={styles.panelScoreLabel}>{t.hero.panel.riskLevel}</div>
+                    <div className={styles.panelScoreLabel}>Risk Level</div>
                     <div className={styles.panelScoreValue} key={riskIndex}>
                       {currentRisk.level}
                     </div>
@@ -187,7 +200,7 @@ export default function HeroSection() {
 
                 <div className={styles.panelFooter}>
                   <span className={styles.panelHint}>
-                    {t.hero.panel.hint}
+                    AI verdict updates in real time
                   </span>
                   <div className={styles.panelPulse} />
                 </div>
@@ -197,8 +210,11 @@ export default function HeroSection() {
             <div className={styles.floatingCard}>
               <div className={styles.floatingIcon}>⚡</div>
               <div>
-                <div className={styles.floatingTitle}>{t.hero.floatingCard.title}</div>
-                <p className={styles.floatingText}>{t.hero.floatingCard.text}</p>
+                <div className={styles.floatingTitle}>Instant Insights</div>
+                <p className={styles.floatingText}>
+                  Highlighting patterns across messages, tone shifts, and legal
+                  signals in seconds.
+                </p>
               </div>
             </div>
           </div>

@@ -6,7 +6,6 @@ import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { EMAIL_REGEX, E164_REGEX, getPhoneAliasEmail, toE164Phone } from '@/lib/auth/phoneAuth';
-import { useLanguage } from './LanguageProvider';
 import styles from './AuthForm.module.css';
 
 type AuthMethod = 'email' | 'phone';
@@ -33,13 +32,18 @@ const COUNTRY_OPTIONS: CountryOption[] = [
   { name: 'South Africa', dialCode: '+27' },
 ];
 
+function getRoleLabel(role: UserRole | null) {
+  if (role === 'lawyer') return 'Lawyer';
+  if (role === 'user') return 'User';
+  return null;
+}
+
 function parseRole(value: string | null): UserRole | null {
   if (value === 'lawyer' || value === 'user') return value;
   return null;
 }
 
 export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
-  const { t } = useLanguage();
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
   const [authMethod, setAuthMethod] = useState<AuthMethod>('email');
   const [identifier, setIdentifier] = useState('');
@@ -54,9 +58,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
   const selectedCountry = COUNTRY_OPTIONS.find((option) => option.name === country) ?? COUNTRY_OPTIONS[0];
   const countryDialCode = selectedCountry.dialCode;
   const role = parseRole(searchParams.get('role'));
-  const roleLabel = role ? t.authForm.roles[role] : null;
-  const localizeCountry = (countryName: string) =>
-    t.authForm.countries[countryName as keyof typeof t.authForm.countries] ?? countryName;
+  const roleLabel = getRoleLabel(role);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,18 +69,18 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
     let emailForAuth = '';
     let phoneForMetadata = '';
 
-      if (authMethod === 'email') {
-        if (!EMAIL_REGEX.test(normalizedIdentifier)) {
-          setError(t.authForm.errors.invalidEmail);
-          return;
-        }
-        emailForAuth = normalizedIdentifier.toLowerCase();
-      } else {
-        const formattedPhone = toE164Phone(normalizedIdentifier, countryDialCode);
-        if (!E164_REGEX.test(formattedPhone)) {
-          setError(t.authForm.errors.invalidPhone);
-          return;
-        }
+    if (authMethod === 'email') {
+      if (!EMAIL_REGEX.test(normalizedIdentifier)) {
+        setError('Please enter a valid email address');
+        return;
+      }
+      emailForAuth = normalizedIdentifier.toLowerCase();
+    } else {
+      const formattedPhone = toE164Phone(normalizedIdentifier, countryDialCode);
+      if (!E164_REGEX.test(formattedPhone)) {
+        setError('Please enter a valid phone number');
+        return;
+      }
       phoneForMetadata = formattedPhone;
       emailForAuth = getPhoneAliasEmail(formattedPhone);
     }
@@ -102,7 +104,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || t.authForm.errors.failedSignup);
+        if (!res.ok) throw new Error(data.error || 'Failed to sign up');
       }
 
 
@@ -129,7 +131,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
       router.push(redirectPath);
       router.refresh();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t.authForm.errors.generic);
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -146,24 +148,24 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
           <h1 className={styles.title}>
             {mode === 'login'
               ? roleLabel
-                ? `${roleLabel} ${t.authForm.titles.loginSuffix}`
-                : t.authForm.titles.welcomeBack
+                ? `${roleLabel} Login`
+                : 'Welcome Back'
               : roleLabel
-                ? `${t.authForm.titles.createPrefix} ${roleLabel} ${t.authForm.titles.createSuffix}`
-                : t.authForm.titles.createAccount}
+                ? `Create ${roleLabel} Account`
+                : 'Create Account'}
           </h1>
           <p className={styles.subtitle}>
             {mode === 'login'
               ? roleLabel
-                ? `${t.authForm.subtitles.signInAs} ${roleLabel.toLowerCase()}`
-                : t.authForm.subtitles.signInToDashboard
-              : t.authForm.subtitles.startProtecting}
+                ? `Sign in as a ${roleLabel.toLowerCase()}`
+                : 'Sign in to access your dashboard'
+              : 'Start protecting yourself today'}
           </p>
           {roleLabel && (
             <p className={styles.roleHint}>
-              {t.authForm.accountType}: <strong>{roleLabel}</strong>{' '}
+              Account type: <strong>{roleLabel}</strong>{' '}
               <Link href="/auth" className={styles.changeRoleLink}>
-                {t.authForm.change}
+                Change
               </Link>
             </p>
           )}
@@ -171,7 +173,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.field}>
-            <label className="label">{t.authForm.emailOrPhone}</label>
+            <label className="label">Email Address or Phone Number</label>
             <div className={styles.methodToggle}>
               <button
                 type="button"
@@ -182,7 +184,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
                   setError('');
                 }}
               >
-                {t.authForm.methods.email}
+                Email Address
               </button>
               <button
                 type="button"
@@ -193,7 +195,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
                   setError('');
                 }}
               >
-                {t.authForm.methods.phone}
+                Phone Number
               </button>
             </div>
           </div>
@@ -201,7 +203,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
           {mode === 'signup' && (
             <div className={styles.field}>
               <label className="label" htmlFor="fullName">
-                {t.authForm.fullName}
+                Full Name
               </label>
               <div className={styles.inputWrap}>
                 <User size={16} className={styles.inputIcon} />
@@ -209,7 +211,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
                   id="fullName"
                   type="text"
                   className={`input ${styles.inputWithIcon}`}
-                  placeholder={t.authForm.placeholders.fullName}
+                  placeholder="Enter your full name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
@@ -221,7 +223,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
           {(mode === 'signup' || authMethod === 'phone') && (
             <div className={styles.field}>
               <label className="label" htmlFor="country">
-                {t.authForm.country}
+                Country
               </label>
               <div className={styles.inputWrap}>
                 <Globe size={16} className={styles.inputIcon} />
@@ -235,7 +237,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
                 >
                   {COUNTRY_OPTIONS.map((option) => (
                     <option key={option.name} value={option.name}>
-                      {localizeCountry(option.name)}
+                      {option.name}
                     </option>
                   ))}
                 </select>
@@ -245,7 +247,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
 
           <div className={styles.field}>
             <label className="label" htmlFor="identifier">
-              {authMethod === 'email' ? t.authForm.emailAddress : t.authForm.phoneNumber}
+              {authMethod === 'email' ? 'Email Address' : 'Phone Number'}
             </label>
             <div className={`${styles.inputWrap} ${authMethod === 'phone' ? styles.phoneInputWrap : ''}`}>
               {authMethod === 'email' ? (
@@ -261,7 +263,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
                 className={`input ${styles.inputWithIcon} ${
                   authMethod === 'phone' ? styles.inputWithDialCode : ''
                 }`}
-                placeholder={authMethod === 'email' ? t.authForm.placeholders.email : t.authForm.placeholders.phone}
+                placeholder={authMethod === 'email' ? 'you@example.com' : 'Enter phone number'}
                 value={identifier}
                 onChange={(e) =>
                   setIdentifier(
@@ -275,7 +277,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
 
           <div className={styles.field}>
             <label className="label" htmlFor="password">
-              {t.authForm.password}
+              Password
             </label>
             <div className={styles.inputWrap}>
               <Lock size={16} className={styles.inputIcon} />
@@ -283,7 +285,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
                 id="password"
                 type="password"
                 className={`input ${styles.inputWithIcon}`}
-                placeholder={t.authForm.placeholders.password}
+                placeholder="********"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -305,7 +307,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
               <Loader size={18} className="animate-spin" />
             ) : (
               <>
-                {mode === 'login' ? t.authForm.actions.signIn : t.authForm.actions.createAccount}
+                {mode === 'login' ? 'Sign In' : 'Create Account'}
                 <ArrowRight size={18} />
               </>
             )}
@@ -314,7 +316,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
 
         <div className={styles.footer}>
           <span className={styles.footerText}>
-            {mode === 'login' ? t.authForm.prompts.noAccount : t.authForm.prompts.haveAccount}
+            {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}
           </span>
           <button
             className={styles.switchBtn}
@@ -325,7 +327,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
               setMessage('');
             }}
           >
-            {mode === 'login' ? t.authForm.actions.signUp : t.authForm.actions.signIn}
+            {mode === 'login' ? 'Sign Up' : 'Sign In'}
           </button>
         </div>
       </div>

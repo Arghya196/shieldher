@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleAIFileManager, FileState } from '@google/generative-ai/server';
+import { writeFile, unlink, mkdtemp } from 'fs/promises';
+import { join } from 'path';
+import { tmpdir } from 'os';
 import crypto from 'node:crypto';
 import { decryptBuffer, encryptData } from '@/lib/crypto-server';
 
@@ -110,12 +114,18 @@ export async function POST(request: NextRequest) {
     await supabase.from('uploads').update({ status: 'analyzing' }).eq('id', uploadId);
 
     let result: any;
+    const tempFiles: string[] = [];
+    
     try {
       const fileUrls = upload.file_url.split(',');
       const fileIVs = (upload.file_iv || '').split(',');
       const fileTypes = (upload.original_type || '').split(',');
 
-      // 1. Fetch and (if needed) decrypt the data ephemeral in RAM
+      // 1. Fetch, decrypt, and stage media
+      let hasVideo = false;
+
+      const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
+
       const imageParts = await Promise.all(fileUrls.map(async (fileUrl: string, index: number) => {
         const imageResp = await fetch(fileUrl);
         if (!imageResp.ok) throw new Error('Failed to fetch file from storage');
@@ -132,15 +142,58 @@ export async function POST(request: NextRequest) {
           }
         }
         
-        const base64Data = buffer.toString('base64');
         let mimeType = fileTypes[index] || imageResp.headers.get('content-type') || '';
-        if (!mimeType || mimeType.startsWith('application/')) mimeType = 'image/png';
+        // Fallback MIME type detection based on file extension
+        if (!mimeType || mimeType.startsWith('application/')) {
+          try {
+            const urlObj = new URL(fileUrl);
+            const pathname = urlObj.pathname.toLowerCase();
+            if (pathname.endsWith('.mp3')) mimeType = 'audio/mp3';
+            else if (pathname.endsWith('.wav')) mimeType = 'audio/wav';
+            else if (pathname.endsWith('.m4a')) mimeType = 'audio/x-m4a';
+            else if (pathname.endsWith('.mp4')) mimeType = 'video/mp4';
+            else if (pathname.endsWith('.mov')) mimeType = 'video/quicktime';
+            else if (pathname.endsWith('.ogg')) mimeType = 'audio/ogg';
+            else if (pathname.endsWith('.png')) mimeType = 'image/png';
+            else if (pathname.endsWith('.jpg') || pathname.endsWith('.jpeg')) mimeType = 'image/jpeg';
+            else if (pathname.endsWith('.webp')) mimeType = 'image/webp';
+            else mimeType = 'audio/ogg'; // Default fallback for unknown
+          } catch {
+            mimeType = 'image/png';
+          }
+        }
         
-        return { inlineData: { data: base64Data, mimeType } };
+        if (mimeType.startsWith('video/')) {
+          hasVideo = true;
+          // E2EE Video Pipeline
+          const tempDir = await mkdtemp(join(tmpdir(), 'shieldher-'));
+          const ext = mimeType.split('/')[1] || 'mp4';
+          const tempPath = join(tempDir, `video_${index}.${ext}`);
+          
+          await writeFile(tempPath, buffer);
+          tempFiles.push(tempPath);
+          
+          const uploadResult = await fileManager.uploadFile(tempPath, { mimeType });
+          let geminiFile = uploadResult.file;
+          
+          while (geminiFile.state === FileState.PROCESSING) {
+            await sleep(2500);
+            geminiFile = await fileManager.getFile(geminiFile.name);
+          }
+          if (geminiFile.state === FileState.FAILED) {
+            throw new Error('Google AI failed to process the video chunk');
+          }
+          
+          return { fileData: { fileUri: geminiFile.uri, mimeType: geminiFile.mimeType } };
+        } else {
+          // Standard base64 proxy pipeline for audio/images
+          const base64Data = buffer.toString('base64');
+          return { inlineData: { data: base64Data, mimeType } };
+        }
       }));
 
       // 2. Define the unified prompt
-      const prompt = `Analyze this evidence for a women's protection application.
+      const prompt = `Analyze this evidence for a women's protection application. ${hasVideo ? '(Ensure you review the visual scenes, dialogue, and body language in the attached video clip).' : ''}
           
           CRITICAL INSTRUCTIONS:
           0. LANGUAGE: Generate the ENTIRE analysis in strictly: ${language}.
@@ -296,6 +349,16 @@ export async function POST(request: NextRequest) {
       console.error('Final Analysis Failure:', aiError.message);
       await supabase.from('uploads').update({ status: 'pending' }).eq('id', uploadId);
       return NextResponse.json({ error: 'AI analysis failed. Please try again later.' }, { status: 500 });
+    } finally {
+      // Securely wipe ephemeral decrypted files
+      for (const tempPath of tempFiles) {
+        try {
+          await unlink(tempPath);
+          console.log(`[E2EE] Cleaned up ephemeral temporary trace: ${tempPath}`);
+        } catch (cleanupErr) {
+          console.error(`[E2EE] Failed to clean up temp file: ${tempPath}`, cleanupErr);
+        }
+      }
     }
 
     // --- 4. ENCRYPT AND STORE RESULTS ---
@@ -338,7 +401,18 @@ export async function POST(request: NextRequest) {
     const finalStatus = (result.risk_level === 'high' || result.risk_level === 'critical') ? 'flagged' : 'completed';
     await supabase.from('uploads').update({ status: finalStatus }).eq('id', uploadId);
 
-    return NextResponse.json({ success: true, analysis: analysisResult });
+    // Return the UNENCRYPTED result to the frontend for immediate viewing
+    return NextResponse.json({ 
+      success: true, 
+      analysis: {
+        id: analysisResult.id,
+        upload_id: uploadId,
+        risk_level: result.risk_level,
+        summary: result.summary,
+        flags: result.flags,
+        details: result.details
+      } 
+    });
 
   } catch (error: any) {
     console.error('API Route Error:', error);

@@ -2,7 +2,6 @@
 
 import { type RiskLevel } from '@/lib/types';
 import { ShieldCheck, ShieldAlert, AlertTriangle, AlertOctagon, Skull } from 'lucide-react';
-import { useLanguage } from './LanguageProvider';
 
 interface RiskBadgeProps {
   level: RiskLevel;
@@ -10,18 +9,16 @@ interface RiskBadgeProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-const config: Record<RiskLevel, { icon: React.ReactNode; className: string }> = {
-  safe: { icon: <ShieldCheck size={14} />, className: 'badge-safe' },
-  low: { icon: <ShieldAlert size={14} />, className: 'badge-low' },
-  medium: { icon: <AlertTriangle size={14} />, className: 'badge-medium' },
-  high: { icon: <AlertOctagon size={14} />, className: 'badge-high' },
-  critical: { icon: <Skull size={14} />, className: 'badge-critical' },
+const config: Record<RiskLevel, { label: string; icon: React.ReactNode; className: string }> = {
+  safe: { label: 'Safe', icon: <ShieldCheck size={14} />, className: 'badge-safe' },
+  low: { label: 'Low Risk', icon: <ShieldAlert size={14} />, className: 'badge-low' },
+  medium: { label: 'Medium', icon: <AlertTriangle size={14} />, className: 'badge-medium' },
+  high: { label: 'High Risk', icon: <AlertOctagon size={14} />, className: 'badge-high' },
+  critical: { label: 'Critical', icon: <Skull size={14} />, className: 'badge-critical' },
 };
 
 export default function RiskBadge({ level, showIcon = true, size = 'md' }: RiskBadgeProps) {
-  const { t } = useLanguage();
-  const { icon, className } = config[level];
-  const label = t.riskBadge[level];
+  const { label, icon, className } = config[level];
 
   const sizeStyle: React.CSSProperties =
     size === 'sm'

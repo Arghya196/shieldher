@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowLeft, Sparkles, Loader, Info, AlertTriangle, Lightbulb, Scale, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Sparkles, Loader, Info, AlertTriangle, Lightbulb, Scale, ShieldCheck, MessageCircle, Activity, AlertOctagon } from 'lucide-react';
 import Link from 'next/link';
 import UploadZone from '@/components/UploadZone';
 import { createClient } from '@/lib/supabase/client';
@@ -235,6 +235,41 @@ export default function UploadPage() {
 
               {showFullAnalysis && (
                 <>
+                  {analysisResult.details?.tone_analysis && (
+                    <div className={styles.resultSection}>
+                      <div className={styles.resultSectionTitle}>
+                        <MessageCircle size={18} /> Tone Analysis
+                      </div>
+                      <p className={styles.legalSummary}>{analysisResult.details.tone_analysis}</p>
+                    </div>
+                  )}
+
+                  {analysisResult.details?.manipulation_indicators && analysisResult.details.manipulation_indicators.length > 0 && (
+                    <div className={styles.resultSection}>
+                      <div className={styles.resultSectionTitle}>
+                        <Activity size={18} /> Manipulation Tactics
+                      </div>
+                      <ul className={styles.recList}>
+                        {analysisResult.details.manipulation_indicators.map((indicator, idx) => (
+                          <li key={idx}>{indicator}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {analysisResult.details?.threat_indicators && analysisResult.details.threat_indicators.length > 0 && (
+                    <div className={styles.resultSection}>
+                      <div className={styles.resultSectionTitle}>
+                        <AlertOctagon size={18} /> Threat Indicators
+                      </div>
+                      <ul className={styles.recList}>
+                        {analysisResult.details.threat_indicators.map((threat, idx) => (
+                          <li key={idx}>{threat}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
                   {analysisResult.details?.recommendations && analysisResult.details.recommendations.length > 0 && (
                     <div className={styles.resultSection}>
                       <div className={styles.resultSectionTitle}>
@@ -253,8 +288,11 @@ export default function UploadPage() {
                       <div className={styles.resultSectionTitle}>
                         <Scale size={18} /> Legal Perspective
                       </div>
-                      <p className={styles.legalSummary}>{analysisResult.details.legal_analysis.summary}</p>
-                      {potentialViolations.length > 0 && (
+                      <div className={styles.legalSummary} style={{ whiteSpace: 'pre-wrap' }}>
+                        {analysisResult.details.legal_analysis.summary.replace(/#/g, '')}
+                      </div>
+
+                      {!analysisResult.details.legal_analysis.powered_by_kanoon && potentialViolations.length > 0 && (
                           <div className={styles.legalSectionsBlock}>
                             <h4 className={styles.legalSectionsTitle}>
                               Possible Applicable Sections / Articles
@@ -265,8 +303,11 @@ export default function UploadPage() {
                               ))}
                             </ul>
                           </div>
-                        )}
-                      <p className={styles.disclaimer}>{analysisResult.details.legal_analysis.disclaimer}</p>
+                      )}
+                      
+                      {!analysisResult.details.legal_analysis.powered_by_kanoon && (
+                        <p className={styles.disclaimer}>{analysisResult.details.legal_analysis.disclaimer}</p>
+                      )}
                     </div>
                   )}
                 </>

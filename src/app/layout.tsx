@@ -32,6 +32,8 @@ export const metadata: Metadata = {
   keywords: ["women safety", "personal protection", "AI safety", "safety network", "threat detection"],
 };
 
+import { LanguageProvider } from "@/components/LanguageProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -46,7 +48,9 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <SmoothScrollProvider>{children}</SmoothScrollProvider>
+        <LanguageProvider>
+          <SmoothScrollProvider>{children}</SmoothScrollProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

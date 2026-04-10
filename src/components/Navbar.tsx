@@ -4,21 +4,18 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import dynamic from 'next/dynamic';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Sun, Moon, Globe } from 'lucide-react';
+import { useTheme } from './ThemeProvider';
 import { useLanguage } from './LanguageProvider';
 import styles from './Navbar.module.css';
-
-const ThemeToggle = dynamic(() => import('./ThemeToggle'), { ssr: false });
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
-  const [languageSearch, setLanguageSearch] = useState('');
   const pathname = usePathname();
-  const { language, setLanguage, t, availableLanguages, isLanguageLoading } = useLanguage();
-  const loadingText = language === 'hi' ? 'अनुवाद हो रहा है...' : 'Translating...';
+  const { theme, toggleTheme } = useTheme();
+  const { language, setLanguage, availableLanguages } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -26,35 +23,7 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    if (pathname === '/' && window.location.hash === '#features') {
-      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
-      window.scrollTo(0, 0);
-    }
-  }, [pathname]);
-
-  useEffect(() => {
-    const handleDocClick = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest(`.${styles.languageWrapper}`)) {
-        setLanguageOpen(false);
-        setLanguageSearch('');
-      }
-    };
-    document.addEventListener('mousedown', handleDocClick);
-    return () => document.removeEventListener('mousedown', handleDocClick);
-  }, []);
-
   const isDashboard = pathname?.startsWith('/dashboard');
-  const filteredLanguages = availableLanguages.filter((option) => {
-    const query = languageSearch.trim().toLowerCase();
-    if (!query) return true;
-    return (
-      option.englishName.toLowerCase().includes(query) ||
-      option.nativeName.toLowerCase().includes(query) ||
-      option.code.toLowerCase().includes(query)
-    );
-  });
 
   if (isDashboard) return null;
 
@@ -62,94 +31,68 @@ export default function Navbar() {
     <nav className={`${styles.navbar} ${scrolled ? styles.scrolled : ''}`}>
       <div className={`container ${styles.inner}`}>
         <Link href="/" className={styles.logo}>
-          <Image 
-            src="/first_attached_logo.png" 
-            alt="ShieldHer Logo" 
-            width={56} 
-            height={56} 
-            className={styles.logoImage}
-            priority
-          />
+          <div className={styles.logoIcon}>
+            <Image src="/logo.png.jpeg" alt="ShieldHer Logo" width={32} height={32} style={{ objectFit: 'contain' }} />
+          </div>
           <span className={styles.logoText}>ShieldHer</span>
         </Link>
 
         <div className={`${styles.links} ${menuOpen ? styles.open : ''}`}>
-          <Link
-            href="/"
-            className={styles.link}
-            onClick={(e) => {
-              setMenuOpen(false);
-              if (pathname === '/') {
-                e.preventDefault();
-                document.getElementById('features')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
-              }
-            }}
-          >
-            {t.navbar.features}
+          <Link href="/#features" className={styles.link} onClick={() => setMenuOpen(false)}>
+            Features
           </Link>
           <Link href="/#how-it-works" className={styles.link} onClick={() => setMenuOpen(false)}>
-            {t.navbar.howItWorks}
+            How It Works
           </Link>
-          <div className={styles.languageWrapper}>
+          
+          <button
+            className={styles.themeToggle}
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+          >
+            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+          </button>
+          <Link href="/auth" className="btn btn-primary btn-sm" onClick={() => setMenuOpen(false)}>
+            Get Started
+          </Link>
+          
+          {/* Language Toggle */}
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginLeft: '8px' }}>
             <button
-              type="button"
-              className={styles.silhouetteIcon}
-              aria-label={t.navbar.language}
-              onClick={() => {
-                setLanguageOpen((prev) => {
-                  const next = !prev;
-                  if (!next) setLanguageSearch('');
-                  return next;
-                });
-              }}
+              onClick={() => setLanguageOpen(!languageOpen)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: 'var(--text-primary)' }}
+              aria-label="Change Language"
             >
-              <Image
-                src="/woman-silhouette.png"
-                alt={t.navbar.language}
-                width={24}
-                height={28}
-                className={styles.silhouetteImage}
-              />
-              <span className={styles.tooltip}>{t.navbar.language}</span>
+              <Globe size={20} />
             </button>
             {languageOpen && (
-              <div className={styles.languageMenu}>
-                <input
-                  type="text"
-                  className={styles.languageSearch}
-                  placeholder={`${t.navbar.language}...`}
-                  value={languageSearch}
-                  onChange={(e) => setLanguageSearch(e.target.value)}
-                />
-                <div className={styles.languageList}>
-                  {filteredLanguages.map((option) => (
-                    <button
-                      key={option.code}
-                      type="button"
-                      className={`${styles.languageOption} ${language === option.code ? styles.languageOptionActive : ''}`}
-                      onClick={() => {
-                        setLanguage(option.code);
-                        setLanguageOpen(false);
-                        setLanguageSearch('');
-                      }}
-                    >
-                      <span className={styles.languageNative}>{option.nativeName}</span>
-                      <span className={styles.languageEnglish}>{option.englishName}</span>
-                    </button>
-                  ))}
-                </div>
+              <div style={{ 
+                position: 'absolute', top: '100%', right: '0', 
+                background: 'var(--bg-card)', border: '1px solid var(--border-color)', 
+                borderRadius: '8px', zIndex: 50, marginTop: '8px',
+                maxHeight: '300px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                minWidth: '150px'
+              }}>
+                {availableLanguages.map(lang => (
+                  <button
+                    key={lang.code}
+                    onClick={() => { setLanguage(lang.code); setLanguageOpen(false); }}
+                    style={{ 
+                      display: 'block', width: '100%', padding: '10px 16px', background: 'none', 
+                      border: 'none', textAlign: 'left', cursor: 'pointer', 
+                      color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)',
+                      fontWeight: language === lang.code ? 'bold' : 'normal',
+                      fontSize: '14px'
+                    }}
+                  >
+                    {lang.nativeName}
+                  </button>
+                ))}
               </div>
             )}
           </div>
-          <ThemeToggle
-            className={styles.themeToggle}
-            switchToDark={t.navbar.switchToDark}
-            switchToLight={t.navbar.switchToLight}
-          />
-          <Link href="/auth" className="btn btn-primary btn-sm" onClick={() => setMenuOpen(false)}>
-            {t.navbar.getStarted}
-          </Link>
+
         </div>
 
         <button
@@ -160,12 +103,6 @@ export default function Navbar() {
           {menuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
-      {isLanguageLoading && (
-        <div className={styles.languageLoadingBadge} role="status" aria-live="polite">
-          <span className={styles.languageLoadingDot} />
-          <span>{loadingText}</span>
-        </div>
-      )}
     </nav>
   );
 }
