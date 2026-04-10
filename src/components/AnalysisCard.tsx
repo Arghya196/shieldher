@@ -2,8 +2,10 @@
 
 import { type AnalysisResult } from '@/lib/types';
 import RiskBadge from './RiskBadge';
-import { AlertTriangle, Clock, ArrowRight } from 'lucide-react';
+import { AlertTriangle, Clock, ArrowRight, ShieldAlert, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage } from './LanguageProvider';
+import { getFriendlyAuthenticityMessage } from '@/lib/mediaAuthenticity';
 import styles from './AnalysisCard.module.css';
 
 interface AnalysisCardProps {
@@ -13,7 +15,9 @@ interface AnalysisCardProps {
 }
 
 export default function AnalysisCard({ analysis, fileName, showLink = true }: AnalysisCardProps) {
+  const { t } = useLanguage();
   const flagCount = analysis.flags?.length || 0;
+  const authenticity = analysis.details?.media_authenticity;
   const date = new Date(analysis.created_at).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -36,11 +40,26 @@ export default function AnalysisCard({ analysis, fileName, showLink = true }: An
 
       <p className={styles.summary}>{analysis.summary}</p>
 
+      {authenticity && authenticity.supported_count > 0 && (
+        <div className={styles.authenticity}>
+          <div className={styles.authenticityTop}>
+            <span className={styles.authenticityTitle}>
+              {authenticity.status === 'ai_generated' ? <ShieldAlert size={14} /> : <ShieldCheck size={14} />}
+              Media Authenticity
+            </span>
+            <span className={styles.authenticityLabel}>{authenticity.label}</span>
+          </div>
+          <p className={styles.authenticityText}>{getFriendlyAuthenticityMessage(authenticity.status)}</p>
+        </div>
+      )}
+
       {flagCount > 0 && (
         <div className={styles.flags}>
           <div className={styles.flagHeader}>
             <AlertTriangle size={14} />
-            <span>{flagCount} flag{flagCount !== 1 ? 's' : ''} detected</span>
+            <span>
+              {flagCount} {t.analysisCard.flagsDetected}
+            </span>
           </div>
           <div className={styles.flagList}>
             {analysis.flags.slice(0, 3).map((flag, i) => (
@@ -50,7 +69,7 @@ export default function AnalysisCard({ analysis, fileName, showLink = true }: An
               </div>
             ))}
             {flagCount > 3 && (
-              <span className={styles.moreFlags}>+{flagCount - 3} more</span>
+              <span className={styles.moreFlags}>+{flagCount - 3} {t.analysisCard.more}</span>
             )}
           </div>
         </div>
@@ -61,7 +80,7 @@ export default function AnalysisCard({ analysis, fileName, showLink = true }: An
           href={`/dashboard/analysis/${analysis.upload_id}`}
           className={styles.link}
         >
-          View Full Analysis
+          {t.analysisCard.viewFull}
           <ArrowRight size={14} />
         </Link>
       )}
