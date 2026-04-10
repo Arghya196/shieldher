@@ -243,7 +243,11 @@ export async function POST(request: NextRequest) {
 
     // ─── Spawn the Python bot ───
     const scriptPath = path.resolve(process.cwd(), 'bot/rpa_complaint_bot.py');
-    const venvPythonPath = path.resolve(process.cwd(), 'bot/.venv/Scripts/python.exe');
+    
+    // Cross-platform venv path
+    const venvPythonPath = process.platform === 'win32'
+      ? path.resolve(process.cwd(), 'bot/.venv/Scripts/python.exe')
+      : path.resolve(process.cwd(), 'bot/.venv/bin/python');
 
     const botDir = path.resolve(process.cwd(), 'bot');
     const logPath = path.join(botDir, 'rpa_tmp', 'bot_output.log');
